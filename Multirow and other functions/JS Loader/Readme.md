@@ -2,16 +2,16 @@
 The files here are a fork of the work of [xiaoxiaoflood](https://github.com/xiaoxiaoflood/firefox-scripts), fixed to work with FF69+, and only loading the necessary things to load external JS and CSS files.
 
 ## Installation
-You can patch your Firefox using the installer in the [releases](https://github.com/Izheil/Quantum-Nox-Firefox-Dark-Full-Theme/releases) section. The patcher will choose the default profile folder, so if you have more than 1 profile you should go to `about:profiles` and make sure that the path the patcher selects is the same as the one of the profile that you are currently using.
+You can patch your Firefox using the installer in the [releases](https://github.com/Izheil/Quantum-Nox-Firefox-Customizations/releases) section. The patcher will choose the default profile folder, so if you have more than 1 profile you should go to `about:profiles` and make sure that the path the patcher selects is the same as the one of the profile that you are currently using.
 
-If you are using **Firefox portable, you will need to change the default root and profile folders to the ones of portable Firefox**, so check the [firefox root folder](https://github.com/Izheil/Quantum-Nox-Firefox-Dark-Full-Theme/wiki/Chrome-and-Root-folders#firefox-root-folder) and [chrome folder](https://github.com/Izheil/Quantum-Nox-Firefox-Dark-Full-Theme/wiki/Chrome-and-Root-folders#the-chrome-folder) sections to locate them first.
+If you are using **Firefox portable, you will need to change the default root and profile folders to the ones of portable Firefox**, so check the [firefox root folder](https://github.com/Izheil/Quantum-Nox-Firefox-Customizations/wiki/Chrome-and-Root-folders#firefox-root-folder) and [chrome folder](https://github.com/Izheil/Quantum-Nox-Firefox-Customizations/wiki/Chrome-and-Root-folders#the-chrome-folder) sections to locate them first.
 
 Alternatively you can follow the explanations below for the manual installation.
 
 ### Manual installation
-To patch firefox with this method, you will have to locate both [firefox root folder](https://github.com/Izheil/Quantum-Nox-Firefox-Dark-Full-Theme/wiki/Chrome-and-Root-folders#firefox-root-folder), and your profile [chrome folder](https://github.com/Izheil/Quantum-Nox-Firefox-Dark-Full-Theme/wiki/Chrome-and-Root-folders#the-chrome-folder).
+To patch firefox with this method, you will have to locate both [firefox root folder](https://github.com/Izheil/Quantum-Nox-Firefox-Customizations/wiki/Chrome-and-Root-folders#firefox-root-folder), and your profile [chrome folder](https://github.com/Izheil/Quantum-Nox-Firefox-Customizations/wiki/Chrome-and-Root-folders#the-chrome-folder).
 
-If you are using **Firefox portable**, note that the [firefox root folder](https://github.com/Izheil/Quantum-Nox-Firefox-Dark-Full-Theme/wiki/Chrome-and-Root-folders#firefox-portable-1) is *not* the install path (such as `C:\FirefoxPortable\Firefox`), but 
+If you are using **Firefox portable**, note that the [firefox root folder](https://github.com/Izheil/Quantum-Nox-Firefox-Customizations/wiki/Chrome-and-Root-folders#firefox-portable-1) is *not* the install path (such as `C:\FirefoxPortable\Firefox`), but 
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`{install path}` + `\App\Firefox` (Example: `C:\FirefoxPortable\Firefox\App\Firefox`) or
 
@@ -19,8 +19,8 @@ If you are using **Firefox portable**, note that the [firefox root folder](https
 
 
 #### Step by step:
-  1. Copy `defaults` folder and `config.js` files inside `root` to [firefox root folder](https://github.com/Izheil/Quantum-Nox-Firefox-Dark-Full-Theme/wiki/Chrome-and-Root-folders#firefox-root-folder).
-  2. Copy `utils` folder to your [chrome folder](https://github.com/Izheil/Quantum-Nox-Firefox-Dark-Full-Theme/wiki/Chrome-and-Root-folders#the-chrome-folder).
+  1. Copy `defaults` folder and `config.js` files inside `root` to [firefox root folder](https://github.com/Izheil/Quantum-Nox-Firefox-Customizations/wiki/Chrome-and-Root-folders#firefox-root-folder).
+  2. Copy `utils` folder to your [chrome folder](https://github.com/Izheil/Quantum-Nox-Firefox-Customizations/wiki/Chrome-and-Root-folders#the-chrome-folder).
 
 Next time you start up firefox, changes should take effect.
 
@@ -52,4 +52,4 @@ To override CSS styles that can't be changed in any other way (like for scrollba
 
 ### Troubleshooting
 
-If after following the above installation some function doesn't seem to be working, you should try [the basic troubleshooting steps](https://github.com/Izheil/Quantum-Nox-Firefox-Dark-Full-Theme/wiki/Troubleshooting) to see what's the problem.
+If after following the above installation some function doesn't seem to be working, you should try [the basic troubleshooting steps](https://github.com/Izheil/Quantum-Nox-Firefox-Customizations/wiki/Troubleshooting) to see what's the problem.

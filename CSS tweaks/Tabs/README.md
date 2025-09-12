@@ -35,10 +35,10 @@ This will change the tabs text color when the state of tabs is unread, loading, 
 
 By default it's not possible to change the unread state of tabs since they are not labeled as unread (Firefox removed the unread state of tabs a few versions ago), so if you want to change that state read below, otherwise, you can just use the code without patching your firefox.
 
-You can patch your Firefox using the [patcher](https://github.com/Izheil/Quantum-Nox-Firefox-Dark-Full-Theme/releases) by choosing your Firefox version, and the "Enable unread state on tabs" option.
+You can patch your Firefox using the [patcher](https://github.com/Izheil/Quantum-Nox-Firefox-Customizations/releases) by choosing your Firefox version, and the "Enable unread state on tabs" option.
 This will add a "utils" folder and a "setAttribute_unread.uc.js" file to your chrome folder, which are required to customize unread tabs with userChrome.
 
-Alternatively, if you use MacOS or something goes wrong with the patcher, you can always do the manual patching with the method explained in [JS Loader](https://github.com/Izheil/Quantum-Nox-Firefox-Dark-Full-Theme/tree/master/Multirow%20and%20other%20functions/JS%20Loader) folder from this repository, and then copying the [setAttribute_unread.uc.js](https://raw.githubusercontent.com/Izheil/Quantum-Nox-Firefox-Dark-Full-Theme/master/CSS%20tweaks/Tabs/setAttribute_unread.uc.js) file to your [chrome folder](https://github.com/Izheil/Quantum-Nox-Firefox-Dark-Full-Theme/wiki/Chrome-and-Root-folders#the-chrome-folder).
+Alternatively, if you use MacOS or something goes wrong with the patcher, you can always do the manual patching with the method explained in [JS Loader](https://github.com/Izheil/Quantum-Nox-Firefox-Customizations/tree/master/Multirow%20and%20other%20functions/JS%20Loader) folder from this repository, and then copying the [setAttribute_unread.uc.js](https://raw.githubusercontent.com/Izheil/Quantum-Nox-Firefox-Customizations/master/CSS%20tweaks/Tabs/setAttribute_unread.uc.js) file to your [chrome folder](https://github.com/Izheil/Quantum-Nox-Firefox-Customizations/wiki/Chrome-and-Root-folders#the-chrome-folder).
 
 ### Rounded-contected-tabs.as.css
 Adds rounded tabs similar to those of chromium browsers.

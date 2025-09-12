@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name           MultiRow Tabs with autohiding scrollbars
-// @namespace      https://github.com/Izheil/Quantum-Nox-Firefox-Dark-Full-Theme
+// @namespace      https://github.com/Izheil/Quantum-Nox-Firefox-Customizations
 // @description    Multi-row tabs draggability fix with autohiding scrollbar
 // @include        main
 // @compatibility  Firefox 70 to Firefox 141

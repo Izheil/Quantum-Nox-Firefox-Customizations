@@ -1,0 +1,22 @@
+/* ################################################################################################## */
+/* THIS FILE IS USED AS A BASE USERCONTENT TO INCLUDE CSS FIXES OF YOUR OWN ON FIREFOX INTERNAL PAGES */
+/* ################################################################################################## */
+
+/* v PLACE YOUR FIXES BELOW v */
+
+@import 'addons.css';
+
+:root{
+  scrollbar-color: #05a #252525;
+  scrollbar-width: auto}
+
+/* ThIS changes the scrollbars size and color.
+The scrollbars-width only has 3 acceptable values, auto, thin, and none:
+auto = default OS size | thin = half the width (will be hidden in about: pages) | none = hidden scrollbar */
+*|* {scrollbar-width: auto}
+
+/* This is a sample internal page to act as a sample */
+@-moz-document url-prefix(file://) {
+    :root {background-color: #202020 !important; color: #ccc !important}
+    
+}

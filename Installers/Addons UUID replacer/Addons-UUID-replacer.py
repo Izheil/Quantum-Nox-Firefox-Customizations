@@ -481,7 +481,7 @@ def addonsPatcher(FFprofile, UUIDDict):
 
             else:
                 print("Addons.css file not found, fetching from repository...")
-                getAddons = requests.get(r'https://raw.githubusercontent.com/Izheil/Quantum-Nox-Firefox-Dark-Full-Theme/master/Full%20dark%20theme/addons.css')
+                getAddons = requests.get(r'https://raw.githubusercontent.com/Izheil/Quantum-Nox-Firefox-Customizations/refs/heads/backup/2025-09-12/Full%20dark%20theme/addons.css')
                 if getAddons.status_code == 200:
                     print("File fetched successfully.\n")
                     with open(addonFile, "w") as f:
@@ -661,7 +661,7 @@ if os.access(addonFile, os.F_OK):
 
     if ovrwAdd == 1:
         print("\nFetching addons.css from repo...")
-        getAddons = requests.get(r'https://raw.githubusercontent.com/Izheil/Quantum-Nox-Firefox-Dark-Full-Theme/master/Full%20dark%20theme/addons.css')
+        getAddons = requests.get(r'https://raw.githubusercontent.com/Izheil/Quantum-Nox-Firefox-Customizations/refs/heads/backup/2025-09-12/Full%20dark%20theme/addons.css')
         if getAddons.status_code == 200:
             print("File fetched successfully.\n")
             with open(addonFile, "w") as f:

@@ -1,7 +1,7 @@
 # JS function installers
 If you don't want to copy the files manually to install multirow, tabs below, or focus tab on hover, you can do it with this installer.
 **Make sure your Firefox is up to date, since the userscripts installed with this assume you have the lastest firefox version.**
-This is the python version of the installer, which requires all files and folders in here to work. For the single file installer go to the [releases](https://github.com/Izheil/Quantum-Nox-Firefox-Dark-Full-Theme/releases) page.
+This is the python version of the installer, which requires all files and folders in here to work. For the single file installer go to the [releases](https://github.com/Izheil/Quantum-Nox-Firefox-Customizations/releases) page.
 
 #### Pre-requisites 
 You need [Python 3.6+](https://www.python.org/downloads/release/python-375/) installed to use these.
@@ -59,7 +59,7 @@ pyinstaller Windows.spec
 Note that the process for Mac requires an extra step, which is bundling the created executable from pyinstaller using the `Platypus-bundling.zsh` as the script to input on [platypus](https://sveinbjorn.org/platypus).
 
 ## The functions
-You can find more explanations in the folders inside [Multirow and other functions](https://github.com/Izheil/Quantum-Nox-Firefox-Dark-Full-Theme/tree/master/Multirow%20and%20other%20functions) folder in this repository.
+You can find more explanations in the folders inside [Multirow and other functions](https://github.com/Izheil/Quantum-Nox-Firefox-Customizations/tree/master/Multirow%20and%20other%20functions) folder in this repository.
 
 ### Multi-row Tabs
 

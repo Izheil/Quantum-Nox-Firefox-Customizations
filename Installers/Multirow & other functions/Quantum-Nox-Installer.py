@@ -919,7 +919,7 @@ def remove_function(firefox_profile, func_to_remove):
 def call_home():
     """This method opens the repository page"""
     webbrowser.open_new(
-        r"https://github.com/Izheil/Quantum-Nox-Firefox-Dark-Full-Theme/tree/master/Multirow%20and%20other%20functions/Other%20features")
+        r"https://github.com/Izheil/Quantum-Nox-Firefox-Customizations/tree/master/Multirow%20and%20other%20functions/Other%20features")
 
 
 def open_chrome_folder(firefox_profile):
