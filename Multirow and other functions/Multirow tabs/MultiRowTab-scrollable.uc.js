@@ -1,10 +1,11 @@
 // ==UserScript==
 // @name           Scrollable Multirow Tabs
-// @namespace      https://github.com/Izheil/Quantum-Nox-Firefox-Dark-Full-Theme
+// @namespace      https://github.com/Izheil/Quantum-Nox-Firefox-Customizations
 // @description    Multi-row tabs draggability fix with scrollable rows
 // @include        main
-// @compatibility  Firefox 70 to Firefox 141
+// @compatibility  Firefox 70 to Firefox 145.0a1 (2025-09-26)
 // @author         Alice0775, Endor8, TroudhuK, Izheil, Merci-chao
+// @version        27/09/2025 06:40 Fix issues with tab groups
 // @version        12/07/2025 00:28 Fix spacing with tab groups and new tab button
 // @version        01/07/2025 17:12 Fixed pinned tabs with Firefox 142.0a1 (2025-06-29)+
 // @version        11/01/2025 01:59 Fixed issue with Firefox 139.0a1 (2025-04-02)+
@@ -61,8 +62,8 @@ window.addEventListener("load", () => zzzz_MultiRowTabLite(), false);
 
 // Don't change these
 let lastKnownIndex = null;
-let lastGroupStart = null;
-let lastGroupEnd = null;
+let groupToInsertTo = null;
+let positionInGroup = null;
 let draggedTabIndex = null;
 
 function zzzz_MultiRowTabLite() {
@@ -256,6 +257,11 @@ function zzzz_MultiRowTabLite() {
         display: block !important;
     }
 
+    /* Fix issues with group tabs */
+    .tab-group-label-container {
+        left: 0 !important;
+    }
+
 	`;
 
     // We check if using australis here
@@ -430,7 +436,7 @@ function zzzz_MultiRowTabLite() {
 
     gBrowser.tabContainer._getDropIndex = function(event) {
         let tabToDropAt = getTabFromEventTarget(event, false);
-        const tabPos = findIndexOfTab(arrowScrollbox, tabToDropAt);
+        const tabPos = findDropIndexOfTab(arrowScrollbox, tabToDropAt);
 
         if (window.getComputedStyle(this).direction == "ltr") {
             let rect = tabToDropAt.getBoundingClientRect();
@@ -508,7 +514,7 @@ function zzzz_MultiRowTabLite() {
     // This sets when to apply the fix (by default a new row starts after the 23th open tab, unless you changed the min-size of tabs)
     gBrowser.tabContainer.ondragstart = (event) => {
         const pinnedTabsCount = arrowScrollbox.querySelectorAll(".tabbrowser-tab[newPin]").length;
-        draggedTabIndex = findIndexOfTab(arrowScrollbox, getTabFromEventTarget(event, false));
+        draggedTabIndex = findDropIndexOfTab(arrowScrollbox, getTabFromEventTarget(event, false));
         if(gBrowser.tabContainer.arrowScrollbox.clientHeight > document.getElementsByClassName("tabbrowser-tab")[0].clientHeight || pinnedTabsCount > 0) {
 
             // Multiple tab select fix
@@ -565,7 +571,7 @@ function performTabDragOver(event) {
     event.preventDefault();
     event.stopPropagation();
 
-    let ind = gBrowser.tabContainer._tabDropIndicator;
+    let ind = gBrowser.tabContainer.getElementsByClassName("tab-drop-indicator")[0];
 
     let effects = orig_getDropEffectForTabDrag(event);
     let tab;
@@ -586,24 +592,40 @@ function performTabDragOver(event) {
         tab = getTabFromEventTarget(event, false);
     }
     
-    let newIndex = gBrowser.tabContainer._getDropIndex(event);
-    if (newIndex == null)
+    let dropIndex = gBrowser.tabContainer._getDropIndex(event);
+    if (dropIndex == null)
         return;
 
-    // Update the last known index and group position
-    lastKnownIndex = newIndex;
-    
-    if (tab.nodeName == "tab-group" && !lastGroupStart) {
-        lastGroupStart = tab.querySelector("tab:first-of-type")._tPos;
-        lastGroupEnd = tab.querySelector("tab:last-of-type")._tPos;
+    // Handle drop index on tab label
+    let tabs = gBrowser.tabContainer.querySelectorAll("tab");
+    if (tab.nodeName === "tab-group") {
+        groupToInsertTo = tab;
+        let groupStart = Array.prototype.indexOf.call(tabs, tab.querySelector("tab:first-of-type"));
+        let groupEnd = Array.prototype.indexOf.call(tabs, tab.querySelector("tab:last-of-type")) + 1;
+        // We can't rely on dropIndex here, so we gotta calculate the index using the group absolute positions
+        positionInGroup = groupEnd - groupStart;
+        dropIndex = groupEnd;
     }
 
-    let tabs = document.querySelectorAll("tab");
+    // Update the last known group position
+    else if (tab.parentNode.nodeName === "tab-group") {
+        groupToInsertTo = tab.parentNode;
+        let groupStart = tab.parentNode.querySelector("tab:first-of-type");
+        positionInGroup = dropIndex - Array.prototype.indexOf.call(tabs, groupStart);
+    } else {
+        groupToInsertTo = null;
+        positionInGroup = null;
+    }
+
     let ltr = (window.getComputedStyle(gBrowser.tabContainer).direction == "ltr");
     let rect = gBrowser.tabContainer.arrowScrollbox.getBoundingClientRect();
     let newMarginX, newMarginY;
-    if (newIndex == tabs.length) {
-        let tabRect = tabs[newIndex - 1].getBoundingClientRect();
+
+    // Update the tab drop position
+    lastKnownIndex = dropIndex;
+
+    if (dropIndex == tabs.length) {
+        let tabRect = tabs[dropIndex - 1].getBoundingClientRect();
         if (ltr)
             newMarginX = tabRect.right - rect.left;
         else
@@ -613,8 +635,8 @@ function performTabDragOver(event) {
         if (CSS.supports("offset-anchor", "left bottom")) // Compatibility fix for FF72+
             newMarginY += rect.height / 2 - tabRect.height / 2;
         
-    } else if (newIndex != null || newIndex != 0) {
-        let tabRect = tabs[newIndex].getBoundingClientRect();
+    } else if (dropIndex != null || dropIndex != 0) {
+        let tabRect = tabs[dropIndex].getBoundingClientRect();
         if (ltr)
             newMarginX = tabRect.left - rect.left;
         else
@@ -650,34 +672,34 @@ function performTabDropEvent(event) {
             return;
         }
     }
+    const tabsContainer = resolveTabsContainer();
+    const allTabs = tabsContainer.querySelectorAll("tab");
+    if (lastKnownIndex >= allTabs.length) {
+        lastKnownIndex = allTabs.length - 1;
+    }
 
-    if (draggedTab && dropEffect != "copy" && draggedTab.container == gBrowser.tabContainer) {
+    // Handle moving tab groups
+    if (draggedTab.nodeName === "label" && draggedTab.parentNode.parentNode.parentNode.nodeName === "tab-group") {
+        let tabGroup = draggedTab.parentNode.parentNode.parentNode;
+        let tabToMoveTo = allTabs[lastKnownIndex];
+        if (groupToInsertTo)
+            moveTabsToGroup(tabGroup.querySelectorAll("tab"));
+        else if (lastKnownIndex != allTabs.length - 1)
+            gBrowser.moveTabBefore(tabGroup, tabToMoveTo);
+        else
+            gBrowser.moveTabAfter(tabGroup, tabToMoveTo);
+    }
+    // Handle moving regular tabs
+    else if (draggedTab && dropEffect != "copy" && draggedTab.container == gBrowser.tabContainer) {
         newIndex = lastKnownIndex;
-        
 
         /* fix for moving multiple selected tabs and tab groups */
-        let selectedTabs = gBrowser.selectedTabs;
-        const tabsContainer = resolveTabsContainer();
-        let pinnedTabsCount = tabsContainer.querySelectorAll(".tabbrowser-tab[newPin]").length;
+        let selectedTabs = gBrowser.selectedTabs.filter(t => t != null);
         
-        if (lastGroupStart) {
-            selectedTabs = [draggedTab?.closest("tab-group")];
-            if (lastKnownIndex >= lastGroupStart && lastKnownIndex <= lastGroupEnd) {
-                newIndex = lastGroupStart;
-            } else if (lastKnownIndex == lastGroupEnd + 1) {
-                newIndex = lastGroupStart + 1;
-            }
-        }
-
-        if (selectedTabs[selectedTabs.length - 1] == null)
-            newIndex = lastKnownIndex;
-
-        if (newIndex > gBrowser.tabContainer.itemCount) {
-            newIndex = gBrowser.tabContainer.itemCount;
-        }
+        let pinnedTabsCount = tabsContainer.querySelectorAll(".tabbrowser-tab[newPin]").length;
 
         // Pin the tab if it wasn't pinned
-        if (newIndex < pinnedTabsCount) {
+        if (newIndex >= 0 && newIndex < pinnedTabsCount) {
             selectedTabs.forEach(t => {
                 if (newIndex > draggedTabIndex) {
                     newIndex--;
@@ -698,12 +720,29 @@ function performTabDropEvent(event) {
                         tabsContainer.insertBefore(tab, tabToMoveAt);
                 }, 10);
             });
+        // Handle moving tabs to a group
+        } else if (groupToInsertTo) {
+            moveTabsToGroup(selectedTabs);
+
+        // Handle regular tab moving
         } else {
+            let allTabs = tabsContainer.querySelectorAll("tab");
+            let tabToMoveTo = allTabs[newIndex];
+            let shouldMoveAfter = tabToMoveTo.parentNode.nodeName === "tab-group";
+            if (shouldMoveAfter)
+                tabToMoveTo = allTabs[newIndex - 1];
+            else if (newIndex === allTabs.length - 1)
+                shouldMoveAfter = true;
+            
             selectedTabs.forEach(t => {
                 if (t.hasAttribute("newPin")) {
                     t.removeAttribute("newPin");
                 }
-                gBrowser.moveTabBefore(t, tabsContainer.childNodes[newIndex])
+                
+                if (!shouldMoveAfter)
+                    gBrowser.moveTabBefore(t, tabToMoveTo);
+                else
+                    gBrowser.moveTabAfter(t, tabToMoveTo);
             });
         }
 
@@ -712,9 +751,10 @@ function performTabDropEvent(event) {
 
         // Restart global vars
         lastKnownIndex = null;
-        lastGroupStart = null;
-        lastGroupEnd = null;
+        groupToInsertTo = null;
+        positionInGroup = null;
     }
+
 }
 
 // This scrolls down to the current tab when you open a new one, or restore a session.
@@ -822,13 +862,32 @@ function resolveTabsContainer() {
 }
 
 /**
+ * Moves a set of tabs to a group.
+ * @param {*} selectedTabs The tabs to move to the group.
+ */
+function moveTabsToGroup(selectedTabs) {
+    let tabInGroupToMoveTo = groupToInsertTo.querySelector(`tab:nth-of-type(${positionInGroup + 1})`);
+    selectedTabs.forEach(t => {
+        if (t.hasAttribute("newPin")) {
+            t.removeAttribute("newPin");
+        }
+        gBrowser.moveTabToGroup(t, groupToInsertTo);
+        
+        if (tabInGroupToMoveTo)
+            gBrowser.moveTabBefore(t, tabInGroupToMoveTo);
+        else
+            gBrowser.moveTabAfter(t, groupToInsertTo.querySelector("tab:last-of-type"));
+    });
+}
+
+/**
  * Finds the index of a tab in a parent container.
  * @param {*} tabsContainer The parent container with all tabs.
  * @param {*} tab The tab to calculate the position of.
  * @returns The index of the tab inside the parent container.
  */
-function findIndexOfTab(tabsContainer, tab) {
-    return Array.prototype.indexOf.call(tabsContainer.childNodes, tab)
+function findDropIndexOfTab(tabsContainer, tab) {
+    return Array.prototype.indexOf.call(tabsContainer.querySelectorAll("tab"), tab)
 }
 
 /**
@@ -843,6 +902,6 @@ function fixUnpinnedTabsPosition(event) {
     if (!pinnedTabs || pinnedTabs.length == 0)
         return;
     const lastPinnedTab = pinnedTabs[pinnedTabs.length - 1];
-    const indexToInsertBefore = findIndexOfTab(tabsContainer, lastPinnedTab) + 1;
+    const indexToInsertBefore = findDropIndexOfTab(tabsContainer, lastPinnedTab) + 1;
     tabsContainer.insertBefore(tab, tabsContainer.childNodes[indexToInsertBefore]);
 }
