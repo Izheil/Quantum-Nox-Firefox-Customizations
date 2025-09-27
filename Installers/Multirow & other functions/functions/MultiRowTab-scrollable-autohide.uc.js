@@ -513,7 +513,6 @@ function zzzz_MultiRowTabLite() {
         let tabsResizer = document.createElement("div");
         tabsResizer.setAttribute('id', "tab-scrollbox-resizer");
         tabsContainer.appendChild(tabsResizer);
-        console.log("Potato")
 
         // Removes the listeners for tab rows resizing
         function finishRowsResizing(event) {
