@@ -8,7 +8,7 @@ If you only want multirow or any other function that isn't related to the theme 
 
 For anyone looking for the old code like the dark theme or the attempt of a mod loader, you can find it in the **backup/2025-09-12** branch.
 
-### Last update: 27/09/2025
+### Last update: 30/09/2025
 
 Files updated:
 
