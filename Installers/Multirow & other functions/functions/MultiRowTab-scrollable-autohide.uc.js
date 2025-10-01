@@ -5,7 +5,7 @@
 // @include        main
 // @compatibility  Firefox 70 to Firefox 145.0a1 (2025-09-26)
 // @author         Alice0775, Endor8, TroudhuK, Izheil, Merci-chao
-// @version        30/09/2025 15:44 Fix issues with tab group moving on FF 143.0.3
+// @version        01/10/2025 06:15 Fix issues with tab group moving
 // @version        27/09/2025 06:40 Fix issues with tab groups
 // @version        12/07/2025 00:28 Fix spacing with tab groups and new tab button
 // @version        01/07/2025 17:12 Fixed pinned tabs with Firefox 142.0a1 (2025-06-29)+
@@ -65,14 +65,6 @@
 // @version        30/11/2018 06:12 Now only the necesary rows appear, not static number of rows
 // @version        23/11/2018 00:41 Firefox 65
 // ==/UserScript==
-window.addEventListener("load", () => zzzz_MultiRowTabLite(), false);
-
-// Don't change these
-let lastKnownIndex = null;
-let groupToInsertTo = null;
-let positionInGroup = null;
-let draggedTabIndex = null;
-
 function zzzz_MultiRowTabLite() {
     // EDITABLE JAVASCRIPT VARIABLES
 
@@ -250,7 +242,7 @@ function zzzz_MultiRowTabLite() {
         display: inline-flex !important;
     }
 
-    #alltabs-button, #tabs-newtab-button .new-tab-popup,
+    #tabs-newtab-button .new-tab-popup,
     #TabsToolbar:not([customizing="true"]) #tabbrowser-tabs[hasadjacentnewtabbutton] ~ #new-tab-button
     {display: none}
 
@@ -282,6 +274,7 @@ function zzzz_MultiRowTabLite() {
     /* Fix issues with group tabs */
     .tab-group-label-container {
         left: 0 !important;
+        margin-inline-start: 0 !important;
     }
 
 	`;
@@ -560,6 +553,15 @@ function zzzz_MultiRowTabLite() {
     };
 }
 
+const TAB_SELECTOR = "tab";
+const TAB_GROUP_SELECTOR = "tab-group";
+
+// Don't change these
+let lastKnownIndex = null;
+let groupToInsertTo = null;
+let positionInGroup = null;
+let draggedTabIndex = null;
+
 /**
  * Gets the tab from the event target.
  * @param {*} event The event.
@@ -570,7 +572,7 @@ function getTabFromEventTarget(event, { ignoreTabSides = false } = {}) {
     if (target.nodeType != Node.ELEMENT_NODE) {
         target = target.parentElement;
     }
-    let tab = target?.closest("tab") || target?.closest("tab-group");
+    let tab = target?.closest(TAB_SELECTOR) || target?.closest(TAB_GROUP_SELECTOR);
     const selectedTab = gBrowser.selectedTab;
     if (tab && ignoreTabSides) {
         let { width, height } = tab.getBoundingClientRect();
@@ -623,19 +625,30 @@ function performTabDragOver(event) {
     if (dropIndex == null)
         return;
 
+    let tabs = gBrowser.tabContainer.querySelectorAll(TAB_SELECTOR);
+    let draggedTab = getDraggedTab(event);
+
+    if (!tab) {
+        tab = getTabFromEventTarget(event, false);
+    }
+    
     // Handle drop index on tab label
-    let tabs = gBrowser.tabContainer.querySelectorAll("tab");
-    if (tab.nodeName === "tab-group") {
+    if (tab.nodeName === TAB_GROUP_SELECTOR) {
         groupToInsertTo = tab;
-        let groupStart = Array.prototype.indexOf.call(tabs, tab.querySelector("tab:first-of-type"));
-        let groupEnd = Array.prototype.indexOf.call(tabs, tab.querySelector("tab:last-of-type")) + 1;
-        // We can't rely on dropIndex here, so we gotta calculate the index using the group absolute positions
-        positionInGroup = groupEnd - groupStart;
-        dropIndex = groupEnd;
+        positionInGroup = 0;
+
+        // Make the dragged tab go to the end of the group if it's a regular tab
+        if (draggedTab?.nodeName === TAB_SELECTOR) {
+            let groupEnd = Array.prototype.indexOf.call(tabs, tab.querySelector("tab:last-of-type")) + 1;
+            // We can't rely on dropIndex here, so we gotta calculate the index using the group absolute positions
+            positionInGroup = -1;
+            dropIndex = groupEnd;
+        }
+            
     }
 
     // Update the last known group position
-    else if (tab.parentNode.nodeName === "tab-group") {
+    else if (tab.parentNode.nodeName === TAB_GROUP_SELECTOR) {
         groupToInsertTo = tab.parentNode;
         let groupStart = tab.parentNode.querySelector("tab:first-of-type");
         positionInGroup = dropIndex - Array.prototype.indexOf.call(tabs, groupStart);
@@ -648,7 +661,7 @@ function performTabDragOver(event) {
     let rect = gBrowser.tabContainer.arrowScrollbox.getBoundingClientRect();
     let newMarginX, newMarginY;
 
-    // Update the tab drop position
+    // Update the tab drop position (different from the drop indicator due to tab groups)
     lastKnownIndex = dropIndex;
 
     if (dropIndex == tabs.length) {
@@ -664,14 +677,36 @@ function performTabDragOver(event) {
         
     } else if (dropIndex != null || dropIndex != 0) {
         let tabRect = tabs[dropIndex].getBoundingClientRect();
+        let tabLeft = tabRect.left;
+        let tabRight = tabRect.right;
+        let tabHeight = tabRect.height;
+        let tabTop = tabRect.top;
+
+        // Handle drop index position when hovering over a group label if the dragged tab is a group
+        let draggingGroupToAnotherGroup = groupToInsertTo === tab && draggedTab?.nodeName === "label";
+        let draggingBeforeGroup = tab.nodeName === TAB_SELECTOR && tab.parentNode.nodeName != TAB_GROUP_SELECTOR 
+            && tabs[dropIndex].parentNode.nodeName === TAB_GROUP_SELECTOR;
+        let groupToCheck = groupToInsertTo
+        if (tabs[dropIndex].parentNode.nodeName === TAB_GROUP_SELECTOR)
+            groupToCheck = tabs[dropIndex].parentNode;
+        let draggingAfterConsecutiveGroup = groupToInsertTo !== groupToCheck && (tab === groupToInsertTo || tab.parentNode == groupToInsertTo);
+
+        if (draggingGroupToAnotherGroup || draggingBeforeGroup || draggingAfterConsecutiveGroup) {
+            let tabRect = groupToCheck.childNodes[0].getBoundingClientRect();
+            tabLeft = tabRect.left;
+            tabTop = tabRect.top;
+            tabRight = tabRect.right;
+            tabHeight = tabRect.height;
+        }
+
         if (ltr)
-            newMarginX = tabRect.left - rect.left;
+            newMarginX = tabLeft - rect.left;
         else
-            newMarginX = rect.right - tabRect.right;
-        newMarginY = tabRect.top + tabRect.height - rect.top - rect.height; // multirow fix
+            newMarginX = rect.right - tabRight;
+        newMarginY = tabTop + tabHeight - rect.top - rect.height; // multirow fix
 
         if (CSS.supports("offset-anchor", "left bottom")) // Compatibility fix for FF72+
-            newMarginY += rect.height / 2 - tabRect.height / 2;
+            newMarginY += rect.height / 2 - tabHeight / 2;
     }
 
     newMarginX += ind.clientWidth / 2;
@@ -692,26 +727,26 @@ function performTabDropEvent(event) {
     let newIndex;
     let dt = event.dataTransfer;
     let dropEffect = dt.dropEffect;
-    let draggedTab;
-    if (dt.mozTypesAt(0)[0] == TAB_DROP_TYPE) {
-        draggedTab = dt.mozGetDataAt(TAB_DROP_TYPE, 0);
-        if (!draggedTab) {
-            return;
-        }
-    }
-const tabsContainer = resolveTabsContainer();
-    const allTabs = tabsContainer.querySelectorAll("tab");
+    let draggedTab = getDraggedTab(event);
+    const tabsContainer = resolveTabsContainer();
+    const allTabs = tabsContainer.querySelectorAll(TAB_SELECTOR);
     if (lastKnownIndex >= allTabs.length) {
         lastKnownIndex = allTabs.length - 1;
     }
 
     // Handle moving tab groups
-    let tabGroup = findParentOfType(draggedTab, "tab-group", 3);
+    let tabGroup = findParentOfType(draggedTab, TAB_GROUP_SELECTOR, 3);
     if (draggedTab.nodeName === "label" && tabGroup) {
         let tabToMoveTo = allTabs[lastKnownIndex];
-        if (groupToInsertTo)
-            moveTabsToGroup(tabGroup.querySelectorAll("tab"));
-        else if (lastKnownIndex != allTabs.length - 1)
+        if (groupToInsertTo) {
+            let groupStart = Array.prototype.indexOf.call(allTabs, groupToInsertTo.querySelector("tab:first-of-type"));
+            let groupEnd = Array.prototype.indexOf.call(allTabs, groupToInsertTo.querySelector("tab:last-of-type"));
+            let groupSize = groupEnd - groupStart;
+            if (positionInGroup < groupSize / 2)
+                gBrowser.moveTabBefore(tabGroup, groupToInsertTo);
+            else
+                gBrowser.moveTabAfter(tabGroup, groupToInsertTo);
+        } else if (lastKnownIndex != allTabs.length - 1)
             gBrowser.moveTabBefore(tabGroup, tabToMoveTo);
         else
             gBrowser.moveTabAfter(tabGroup, tabToMoveTo);
@@ -772,9 +807,9 @@ function moveSelectedTabs(newIndex, tabsContainer) {
 
     // Handle regular tab moving
     } else {
-        let allTabs = tabsContainer.querySelectorAll("tab");
+        let allTabs = tabsContainer.querySelectorAll(TAB_SELECTOR);
         let tabToMoveTo = allTabs[newIndex];
-        let shouldMoveAfter = tabToMoveTo.parentNode.nodeName === "tab-group";
+        let shouldMoveAfter = tabToMoveTo.parentNode.nodeName === TAB_GROUP_SELECTOR;
         if (shouldMoveAfter)
             tabToMoveTo = allTabs[newIndex - 1];
         else if (newIndex === allTabs.length - 1)
@@ -834,12 +869,10 @@ function orig_getDropEffectForTabDrag(event) {
 
     if (isMovingTabs) {
         let sourceNode = dt.mozGetDataAt(TAB_DROP_TYPE, 0);
-        if (XULElement.isInstance(sourceNode) &&
-            sourceNode.localName == "tab" &&
+        if ((gBrowser.isTab(sourceNode) || gBrowser.isTabGroupLabel(sourceNode)) &&
             sourceNode.ownerGlobal.isChromeWindow &&
             sourceNode.ownerDocument.documentElement.getAttribute("windowtype") ==
-            "navigator:browser" &&
-            sourceNode.ownerGlobal.gBrowser.tabContainer == sourceNode.container) {
+            "navigator:browser") {
             // Do not allow transfering a private tab to a non-private window
             // and vice versa.
             if (PrivateBrowsingUtils.isWindowPrivate(window) !=
@@ -911,8 +944,10 @@ function moveTabsToGroup(selectedTabs) {
         
         if (tabInGroupToMoveTo)
             gBrowser.moveTabBefore(t, tabInGroupToMoveTo);
-        else
+        else if (positionInGroup == -1)
             gBrowser.moveTabAfter(t, groupToInsertTo.querySelector("tab:last-of-type"));
+        else
+            gBrowser.moveTabAfter(t, groupToInsertTo);
     });
 }
 
@@ -923,7 +958,7 @@ function moveTabsToGroup(selectedTabs) {
  * @returns The index of the tab inside the parent container.
  */
 function findDropIndexOfTab(tabsContainer, tab) {
-    return Array.prototype.indexOf.call(tabsContainer.childNodes, tab)
+    return Array.prototype.indexOf.call(tabsContainer.querySelectorAll(TAB_SELECTOR), tab)
 }
 
 /**
@@ -959,3 +994,23 @@ function findParentOfType(element, nodeName, maxDepth = 5) {
     }
     return null;
 }
+
+/**
+ * Gets the currently dragged tab.
+ * @param {Event} event The drag event.
+ * @returns The dragged tab.
+ */
+function getDraggedTab(event) {
+    let draggedTab;
+    let dt = event.dataTransfer;
+    if (dt.mozTypesAt(0)[0] == TAB_DROP_TYPE) {
+        draggedTab = dt.mozGetDataAt(TAB_DROP_TYPE, 0);
+        if (!draggedTab) {
+            return null;
+        }
+    }
+    return draggedTab;
+}
+
+// Don't remove the event listener for the main method
+window.addEventListener("load", () => zzzz_MultiRowTabLite(), false);

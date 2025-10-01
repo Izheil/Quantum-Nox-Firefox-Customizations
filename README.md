@@ -8,11 +8,11 @@ If you only want multirow or any other function that isn't related to the theme 
 
 For anyone looking for the old code like the dark theme or the attempt of a mod loader, you can find it in the **backup/2025-09-12** branch.
 
-### Last update: 30/09/2025
+### Last update: 01/10/2025
 
 Files updated:
 
-- __Multirow*uc.js__: Fixed some issues with tab groups.
+- __Multirow*uc.js__: Fixed some issues while moving tab groups.
 
 
 ### Pre-Last update: 07/07/2025
