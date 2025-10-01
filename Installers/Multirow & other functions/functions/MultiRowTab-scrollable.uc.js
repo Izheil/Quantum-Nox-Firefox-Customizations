@@ -651,21 +651,40 @@ function performTabDragOver(event) {
         let tabHeight = tabRect.height;
         let tabTop = tabRect.top;
 
-        // Handle drop index position when hovering over a group label if the dragged tab is a group
-        let draggingGroupToAnotherGroup = groupToInsertTo === tab && draggedTab?.nodeName === "label";
-        let draggingBeforeGroup = tab.nodeName === TAB_SELECTOR && tab.parentNode.nodeName != TAB_GROUP_SELECTOR 
-            && tabs[dropIndex].parentNode.nodeName === TAB_GROUP_SELECTOR;
-        let groupToCheck = groupToInsertTo
-        if (tabs[dropIndex].parentNode.nodeName === TAB_GROUP_SELECTOR)
-            groupToCheck = tabs[dropIndex].parentNode;
-        let draggingAfterConsecutiveGroup = groupToInsertTo !== groupToCheck && (tab === groupToInsertTo || tab.parentNode == groupToInsertTo);
-
-        if (draggingGroupToAnotherGroup || draggingBeforeGroup || draggingAfterConsecutiveGroup) {
-            let tabRect = groupToCheck.childNodes[0].getBoundingClientRect();
-            tabLeft = tabRect.left;
+        // Handle drop index position when hovering over a group
+        let tabGroup = tab.nodeName === TAB_GROUP_SELECTOR ? tab : tab.parentNode;
+        if (draggedTab?.nodeName === "label" && tabGroup.nodeName === TAB_GROUP_SELECTOR) {
+            let groupStart = Array.prototype.indexOf.call(tabs, tabGroup.querySelector("tab:first-of-type"));
+            let groupEnd = Array.prototype.indexOf.call(tabs, tabGroup.querySelector("tab:last-of-type")) + 1;
+            let groupSize = groupEnd - groupStart;
+            let tabRect;
+            
+            if (positionInGroup < groupSize / 2) {
+                tabRect = tabGroup.childNodes[0].getBoundingClientRect();
+                tabLeft = tabRect.left;
+            } else {
+                tabRect = tabGroup.querySelector("tab:last-of-type").getBoundingClientRect();
+                tabLeft = tabRect.right;
+            }
             tabTop = tabRect.top;
             tabRight = tabRect.right;
             tabHeight = tabRect.height;
+        } else {
+            let draggingGroupToAnotherGroup = groupToInsertTo === tab && draggedTab?.nodeName === "label";
+            let draggingBeforeGroup = tab.nodeName === TAB_SELECTOR && tab.parentNode.nodeName != TAB_GROUP_SELECTOR 
+                && tabs[dropIndex].parentNode.nodeName === TAB_GROUP_SELECTOR;
+            let groupToCheck = groupToInsertTo
+            if (tabs[dropIndex].parentNode.nodeName === TAB_GROUP_SELECTOR)
+                groupToCheck = tabs[dropIndex].parentNode;
+            let draggingAfterConsecutiveGroup = groupToInsertTo !== groupToCheck && tabGroup == groupToInsertTo;
+
+            if (draggingGroupToAnotherGroup || draggingBeforeGroup || draggingAfterConsecutiveGroup) {
+                let tabRect = groupToCheck.childNodes[0].getBoundingClientRect();
+                tabLeft = tabRect.left;
+                tabTop = tabRect.top;
+                tabRight = tabRect.right;
+                tabHeight = tabRect.height;
+            }
         }
 
         if (ltr)
