@@ -8,20 +8,18 @@ If you only want multirow or any other function that isn't related to the theme 
 
 For anyone looking for the old code like the dark theme or the attempt of a mod loader, you can find it in the **backup/2025-09-12** branch.
 
-### Last update: 01/10/2025
+### Last update: 03/10/2025
+
+Files updated:
+
+- __Multirow*uc.js__: Yet more fixes for tab groups.
+
+
+### Pre-Last update: 01/10/2025
 
 Files updated:
 
 - __Multirow*uc.js__: Fixed some issues while moving tab groups.
-
-
-### Pre-Last update: 07/07/2025
-
-Files updated:
-
-- Removed the full dark theme, since it has been broken for a while.
-- Removed the custom mod loader, since it was too ambitious and required a major rewrite.
-- Left all the old code at backup/2025-09-12 branch
 
 ### A note on people looking to replace some Tab Mix Plus features:
 You can find some of the basic settings that can be simulated through `about:config`, some userscripts, and some addons [here](https://github.com/Izheil/Quantum-Nox-Firefox-Customizations/wiki/Useful-about:config-settings#some-tab-mix-plus-features).

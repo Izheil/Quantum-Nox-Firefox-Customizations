@@ -5,6 +5,7 @@
 // @include        main
 // @compatibility  Firefox 70 to Firefox 145.0a1 (2025-09-26)
 // @author         Alice0775, Endor8, TroudhuK, Izheil, Merci-chao
+// @version        03/10/2025 02:59 Fix tab group label showing on move
 // @version        01/10/2025 06:15 Fix issues with tab group moving
 // @version        27/09/2025 06:40 Fix issues with tab groups
 // @version        12/07/2025 00:28 Fix spacing with tab groups and new tab button
@@ -241,6 +242,10 @@ function zzzz_MultiRowTabLite() {
         margin-inline-start: 0 !important;
     }
 
+    tab-group[hideonmove] {
+        visibility: hidden !important;
+    }
+
 	`;
 
     // We check if using australis here
@@ -417,7 +422,10 @@ function getTabFromEventTarget(event, { ignoreTabSides = false } = {}) {
         target = target.parentElement;
     }
     let tab = target?.closest(TAB_SELECTOR) || target?.closest(TAB_GROUP_SELECTOR);
-    const selectedTab = gBrowser.selectedTab;
+    let selectedTab = getDraggedTab(event);
+    if (selectedTab.nodeName === "label") {
+        selectedTab = findParentOfType(selectedTab, TAB_GROUP_SELECTOR, 3)?.querySelector("tab:first-of-type") || gBrowser.selectedTab;
+    }
     if (tab && ignoreTabSides) {
         let { width, height } = tab.getBoundingClientRect();
         if (
@@ -471,10 +479,13 @@ function performTabDragOver(event) {
 
     let tabs = gBrowser.tabContainer.querySelectorAll(TAB_SELECTOR);
     let draggedTab = getDraggedTab(event);
+    let draggedGroup = findParentOfType(draggedTab, TAB_GROUP_SELECTOR, 3);
 
-    if (!tab) {
+    if (draggedGroup)
+        draggedGroup.setAttribute("hideonmove", "");
+    
+    if (!tab)
         tab = getTabFromEventTarget(event, false);
-    }
     
     // Handle drop index on tab label
     if (tab.nodeName === TAB_GROUP_SELECTOR) {
@@ -525,34 +536,37 @@ function performTabDragOver(event) {
         let tabHeight = tabRect.height;
         let tabTop = tabRect.top;
 
-        // Handle drop index position when hovering over a group
+        // Handle drop index position when hovering over a group label
         let tabGroup = tab.nodeName === TAB_GROUP_SELECTOR ? tab : tab.parentNode;
-        if (draggedTab?.nodeName === "label" && tabGroup.nodeName === TAB_GROUP_SELECTOR) {
+        if (draggedTab?.nodeName === "label" && tabGroup?.nodeName === TAB_GROUP_SELECTOR) {
+            let tabRect;
+            let draggedIndex = Array.prototype.indexOf.call(tabs, draggedGroup.querySelector("tab:first-of-type"));
             let groupStart = Array.prototype.indexOf.call(tabs, tabGroup.querySelector("tab:first-of-type"));
             let groupEnd = Array.prototype.indexOf.call(tabs, tabGroup.querySelector("tab:last-of-type")) + 1;
             let groupSize = groupEnd - groupStart;
-            let tabRect;
-            
-            if (positionInGroup < groupSize / 2) {
+
+            if (positionInGroup < groupSize / 2 && draggedIndex !== groupStart) {
                 tabRect = tabGroup.childNodes[0].getBoundingClientRect();
                 tabLeft = tabRect.left;
             } else {
                 tabRect = tabGroup.querySelector("tab:last-of-type").getBoundingClientRect();
                 tabLeft = tabRect.right;
             }
+            
             tabTop = tabRect.top;
             tabRight = tabRect.right;
             tabHeight = tabRect.height;
         } else {
             let draggingGroupToAnotherGroup = groupToInsertTo === tab && draggedTab?.nodeName === "label";
-            let draggingBeforeGroup = tab.nodeName === TAB_SELECTOR && tab.parentNode.nodeName != TAB_GROUP_SELECTOR 
-                && tabs[dropIndex].parentNode.nodeName === TAB_GROUP_SELECTOR;
+            let draggingBeforeGroup = tab.nodeName === TAB_SELECTOR && tab.parentNode.nodeName !== TAB_GROUP_SELECTOR 
+                && tabs[dropIndex].parentNode.nodeName === TAB_GROUP_SELECTOR 
+                && tabs[dropIndex].parentNode !== draggedGroup;
             let groupToCheck = groupToInsertTo
             if (tabs[dropIndex].parentNode.nodeName === TAB_GROUP_SELECTOR)
                 groupToCheck = tabs[dropIndex].parentNode;
             let draggingAfterConsecutiveGroup = groupToInsertTo !== groupToCheck && tabGroup == groupToInsertTo;
-
             if (draggingGroupToAnotherGroup || draggingBeforeGroup || draggingAfterConsecutiveGroup) {
+                
                 let tabRect = groupToCheck.childNodes[0].getBoundingClientRect();
                 tabLeft = tabRect.left;
                 tabTop = tabRect.top;
@@ -592,14 +606,15 @@ function performTabDropEvent(event) {
     let draggedTab = getDraggedTab(event);
     const tabsContainer = resolveTabsContainer();
     const allTabs = tabsContainer.querySelectorAll(TAB_SELECTOR);
-    if (lastKnownIndex >= allTabs.length) {
-        lastKnownIndex = allTabs.length - 1;
-    }
 
     // Handle moving tab groups
     let tabGroup = findParentOfType(draggedTab, TAB_GROUP_SELECTOR, 3);
     if (draggedTab.nodeName === "label" && tabGroup) {
+        tabGroup.removeAttribute("hideonmove");
         let tabToMoveTo = allTabs[lastKnownIndex];
+        let draggedIndex = Array.prototype.indexOf.call(allTabs, tabGroup.querySelector("tab:first-of-type"));
+        if (draggedIndex === lastKnownIndex)
+            return;
         if (groupToInsertTo) {
             let groupStart = Array.prototype.indexOf.call(allTabs, groupToInsertTo.querySelector("tab:first-of-type"));
             let groupEnd = Array.prototype.indexOf.call(allTabs, groupToInsertTo.querySelector("tab:last-of-type"));
@@ -608,13 +623,15 @@ function performTabDropEvent(event) {
                 gBrowser.moveTabBefore(tabGroup, groupToInsertTo);
             else
                 gBrowser.moveTabAfter(tabGroup, groupToInsertTo);
-        } else if (lastKnownIndex != allTabs.length - 1)
+        } else if (lastKnownIndex !== allTabs.length)
             gBrowser.moveTabBefore(tabGroup, tabToMoveTo);
         else
-            gBrowser.moveTabAfter(tabGroup, tabToMoveTo);
+            gBrowser.moveTabAfter(tabGroup, allTabs[lastKnownIndex - 1]);
     }
     // Handle moving regular tabs
     else if (draggedTab && dropEffect != "copy" && draggedTab.container == gBrowser.tabContainer) {
+        if (lastKnownIndex >= allTabs.length) 
+            lastKnownIndex = allTabs.length - 1;
         newIndex = lastKnownIndex;
 
         // Perform the actual moving of tabs
