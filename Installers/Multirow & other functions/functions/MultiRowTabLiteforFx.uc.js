@@ -238,7 +238,6 @@ function zzzz_MultiRowTabLite() {
 
     /* Fix issues with group tabs */
     .tab-group-label-container {
-        left: 0 !important;
         margin-inline-start: 0 !important;
     }
 
@@ -481,7 +480,7 @@ function performTabDragOver(event) {
     let draggedTab = getDraggedTab(event);
     let draggedGroup = findParentOfType(draggedTab, TAB_GROUP_SELECTOR, 3);
 
-    if (draggedGroup)
+    if (draggedTab.nodeName === "label" && draggedGroup)
         draggedGroup.setAttribute("hideonmove", "");
     
     if (!tab)
