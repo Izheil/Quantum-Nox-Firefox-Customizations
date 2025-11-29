@@ -107,7 +107,6 @@ let _uc = {
     if (!script.regex.test(win.location.href) || (script.filename != this.ALWAYSEXECUTE && !script.isEnabled)) {
       return;
     }
-
     if (script.onlyonce && script.isRunning) {
       if (script.startup) {
         eval(script.startup);
@@ -173,18 +172,24 @@ if (xPref.get(_uc.PREF_SCRIPTSDISABLED) === undefined) {
 
 let UserChrome_js = {
   observe: function (aSubject) {
-    aSubject.addEventListener('DOMContentLoaded', this, {once: true});
+    if (aSubject != null) {
+      aSubject.addEventListener('DOMContentLoaded', this, {once: true});
+    }
   },
 
   handleEvent: function (aEvent) {
     let document = aEvent.originalTarget;
     let window = document.defaultView;
-    this.load(window);
+    if (window.parent.location.href == 'chrome://browser/content/browser.xhtml') {
+      this.load(window.parent);
+    } else {
+      this.load(window);
+    }
   },
 
   load: function (window) {
     let location = window.location;
-
+    Components.utils.reportError(window.location.href);
     if (!this.sharedWindowOpened && location.href == 'chrome://extensions/content/dummy.xhtml') {
       this.sharedWindowOpened = true;
 
@@ -232,7 +237,7 @@ if (!Services.appinfo.inSafeMode) {
   while (windows.hasMoreElements()) {
     let win = windows.getNext();
     if (!('UC' in win))
-      UserChrome_js.load(win)
+      UserChrome_js.load(win);
   }
   Services.obs.addObserver(UserChrome_js, 'chrome-document-global-created', false);
 }

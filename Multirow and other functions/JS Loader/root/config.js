@@ -7,10 +7,12 @@ try {
   cmanifest.append('utils');
   cmanifest.append('chrome.manifest');
   Components.manager.QueryInterface(Ci.nsIComponentRegistrar).autoRegister(cmanifest);
-
-  Services.scriptloader.loadSubScript('chrome://userchromejs/content/BootstrapLoader.js');
-} catch (ex) {}
+} catch (e) {
+  Components.utils.reportError(e);
+}
 
 try {
-  Services.scriptloader.loadSubScript('chrome://userchromejs/content/userChrome.js'); 
-} catch (ex) {}
+  Services.scriptloader.loadSubScript('chrome://userchromejs/content/userChrome.js');
+} catch(e) {
+	Components.utils.reportError(e);
+}
