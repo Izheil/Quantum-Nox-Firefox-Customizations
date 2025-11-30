@@ -14,6 +14,7 @@ Files updated:
 
 - __userChrome.js__: Fix to make the js files loader work on FF 147+.
 - __config.js__: Added an error logger and removed some deprecated file loading.
+- __Multirows*.uc.js__: Fixed issue with the all tabs button displacing the new tab on new rows.
 
 
 ### Pre-Last update: 03/10/2025

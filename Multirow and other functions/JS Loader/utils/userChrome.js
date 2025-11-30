@@ -1,6 +1,5 @@
 'use strict';
 
-const Services = globalThis.Services || ChromeUtils.import("resource://gre/modules/Services.jsm").Services;
 ChromeUtils.defineESModuleGetters(this, {
     xPref: 'chrome://userchromejs/content/xPref.sys.mjs',
     Management: 'resource://gre/modules/Extension.sys.mjs',

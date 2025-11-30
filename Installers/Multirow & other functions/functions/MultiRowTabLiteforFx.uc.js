@@ -5,6 +5,7 @@
 // @include        main
 // @compatibility  Firefox 70 to Firefox 145.0a1 (2025-09-26)
 // @author         Alice0775, Endor8, TroudhuK, Izheil, Merci-chao
+// @version        30/11/2025 05:24 Fix the all tabs button displacing the new tab button on new row
 // @version        03/10/2025 02:59 Fix tab group label showing on move
 // @version        01/10/2025 06:15 Fix issues with tab group moving
 // @version        27/09/2025 06:40 Fix issues with tab groups
@@ -185,7 +186,10 @@ function zzzz_MultiRowTabLite() {
 
     /* This fixes the new tab button overflowing to the new row alone */
     #tabs-newtab-button {
-        margin-left: -32px !important} 
+        margin-left: -32px !important}
+
+    #alltabs-button {
+        margin-left: 3px !important}
         
     .tabbrowser-tab:has(+#tabbrowser-arrowscrollbox-periphery), tab-group:has(+#tabbrowser-arrowscrollbox-periphery),
     tab-group:has(+#tabbrowser-arrowscrollbox-periphery) > tab:last-of-type {
