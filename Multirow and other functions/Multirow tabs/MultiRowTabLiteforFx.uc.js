@@ -186,14 +186,11 @@ function zzzz_MultiRowTabLite() {
 
     /* This fixes the new tab button overflowing to the new row alone */
     #tabs-newtab-button {
-        margin-left: -32px !important}
-
-    #alltabs-button {
-        margin-left: 3px !important}
+        margin-left: -36px !important}
         
     .tabbrowser-tab:has(+#tabbrowser-arrowscrollbox-periphery), tab-group:has(+#tabbrowser-arrowscrollbox-periphery),
     tab-group:has(+#tabbrowser-arrowscrollbox-periphery) > tab:last-of-type {
-        margin-right: 32px !important}
+        margin-right: 36px !important}
 
     /* This fixes issues with tab dragging */
     .tabbrowser-tab[dragtarget] {
