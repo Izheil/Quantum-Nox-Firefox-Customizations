@@ -3,62 +3,13 @@
 // @namespace      https://github.com/Izheil/Quantum-Nox-Firefox-Customizations
 // @description    Multi-row tabs draggability fix with scrollable rows
 // @include        main
-// @compatibility  Firefox 70 to Firefox 145.0a1 (2025-09-26)
+// @compatibility  Firefox 147 to Firefox 149.0a1 (2026-02-12)
 // @author         Alice0775, Endor8, TroudhuK, Izheil, Merci-chao
-// @version        30/11/2025 05:24 Fix the all tabs button displacing the new tab button on new row
+// @version        12/02/2026 18:40 Fix dragging tabs from a tab group
 // @version        03/10/2025 02:59 Fix tab group label showing on move
 // @version        01/10/2025 06:15 Fix issues with tab group moving
 // @version        27/09/2025 06:40 Fix issues with tab groups
 // @version        12/07/2025 00:28 Fix spacing with tab groups and new tab button
-// @version        01/07/2025 17:12 Fixed pinned tabs with Firefox 142.0a1 (2025-06-29)+
-// @version        11/01/2025 01:59 Fixed issue with Firefox 139.0a1 (2025-04-02)+
-// @version        11/01/2025 01:59 Fixed gBrowser issue with Firefox 134+
-// @version        13/11/2024 23:13 Fixed issue with Firefox 133+
-// @version        07/09/2024 13:25 Compatibility fix for FF131a (Nightly)
-// @version        10/05/2023 18:42 Fix tab-growth variable from not applying
-// @version        15/12/2022 22:17 Fixed min/max/close button duplication when having menu bar always visible
-// @version        14/12/2022 19:11 Fixed issue with Firefox 108 (Stable)
-// @version        21/11/2022 18:38 Fixed issue with Firefox 108a (Nightly)
-// @version        15/09/2021 11:39 Added experimental support for tab sizing below 20px
-// @version        10/09/2021 09:49 Fixed regression of pinned tabs icon showing unaligned
-// @version        19/08/2021 03:15 Compatibility fix for FF91
-// @version        07/08/2021 07:36 Fix for some linux issue when going out of fullscreen
-// @version        08/07/2021 07:31 Fixed some issue when having only pinned tabs
-// @version        05/06/2021 12:12 Support for changing scrollbar size and color
-// @version        05/06/2021 03:11 Lightweight themes fix
-// @version        04/06/2021 04:39 Tab height fix for Proton
-// @version        07/03/2021 23:24 Compatibility fix with Simple Tab Groups addon
-// @version        12/02/2021 06:23 Added the option to make the scrollbar thin and change its color
-// @version        12/02/2021 02:18 The new tab button now wont start a new row by itself, and multiple tab selection fixed
-// @version        04/01/2021 22:45 Added an optional tab rows resizer that you can toggle with "useResizer" var
-// @version        07/12/2020 01:21 Stopped hidding tab right borders since it's not related to multirow
-// @version        25/09/2020 23:26 Fixed glitch on opening tabs in the background while on fullscreen
-// @version        06/09/2020 18:29 Compatibility fix for Australis and fix for pinned tabs glitch
-// @version        28/07/2020 23:28 Compatibility fix for FF81 
-// @version        03/07/2020 00:34 Fixed an issue with the new tab button overflowing the scrollbar
-// @version        12/05/2020 13:09 Removed unnecesary selector
-// @version        09/04/2020 08:14 Minor fixes for tab line when window is resized
-// @version        08/04/2020 05:40 Compatibility fix for FF77
-// @version        16/03/2020 05:15 Fixed some issue with tab transitions
-// @version        06/03/2020 21:56 Fixed an issue with tab lines and duplicated buttons
-// @version        12/02/2020 03:30 Fixed some issue with the min/resize/close buttons
-// @version        18/01/2020 02:39 Added a fix for people who always spoof their useragent
-// @version        13/01/2020 05:01 Fixed the tab drop indicator on FF72+
-// @version        15/11/2019 15:45 Unified FF67+ and FF72 versions
-// @version        11/10/2019 18:32 Compatibility fix for FF71
-// @version        06/09/2019 23:37 Fixed issue with tabs when moving to another window
-// @version        05/09/2019 03:24 Fixed tab draggability to work with FF69
-// @version        23/03/2019 08:30 Variables to set min-width of tabs
-// @version        09/03/2019 15:38 Fixed compatibility issue with Tab Session Manager addon
-// @version        18/02/2019 20:46 Tab line not being fully shown on maximized or fullscreen
-// @version        03/02/2019 15:15 Firefox 67
-// @version        03/02/2019 04:22 Fixed issue with scrolling when selecting non-visible tab
-// @version        02/02/2019 00:17 Fixed transparent line under tabs and touch density tabs issue
-// @version        01/02/2019 10:32 Fixed issue window dragging while keeping scrollbar dragging
-// @version        31/01/2019 10:32 Fixed issue with fullscreen
-// @version        30/01/2019 02:05 Fixed issue with a pixel being above the tab bar
-// @version        30/11/2018 06:12 Now only the necesary rows appear, not static number of rows
-// @version        23/11/2018 00:41 Firefox 65
 // ==/UserScript==
 function zzzz_MultiRowTabLite() {
     // EDITABLE JAVASCRIPT VARIABLES
@@ -199,8 +150,8 @@ function zzzz_MultiRowTabLite() {
     }
 
     /* This fixes the new tab button overflowing to the new row alone */
-    #tabs-newtab-button {
-        margin-left: -36px !important}
+    #tabbrowser-arrowscrollbox-periphery {
+        margin-left: -36px !important} 
         
     .tabbrowser-tab:has(+#tabbrowser-arrowscrollbox-periphery), tab-group:has(+#tabbrowser-arrowscrollbox-periphery),
     tab-group:has(+#tabbrowser-arrowscrollbox-periphery) > tab:last-of-type {
@@ -255,11 +206,6 @@ function zzzz_MultiRowTabLite() {
     .tab-group-label-container {
         margin-inline-start: 0 !important;
     }
-
-    tab-group[hideonmove] {
-        visibility: hidden !important;
-    }
-
 	`;
 
     // We check if using australis here
@@ -296,137 +242,89 @@ function zzzz_MultiRowTabLite() {
     }
     
     
-    if (arrowScrollbox.shadowRoot) {
-        css +=
-        `scrollbar, #tab-scrollbox-resizer {-moz-window-dragging: no-drag !important}
+    css +=
+    `scrollbar, #tab-scrollbox-resizer {-moz-window-dragging: no-drag !important}
 
-        #tabbrowser-tabs > arrowscrollbox {
-            overflow: visible;
-            display: block;
-        `
+    #tabbrowser-tabs > arrowscrollbox {
+        overflow: visible;
+        display: block;
+    `
 
-        // This is a fix for the shadow elements:
-        style.innerHTML = `
-        .scrollbox-clip {
-            overflow: visible;
-            display: block;
-        }
+    // This is a fix for the shadow elements:
+    style.innerHTML = `
+    .scrollbox-clip {
+        overflow: visible;
+        display: block;
+    }
 
+    scrollbox {
+        display: flex;
+        flex-wrap: wrap; 
+        overflow-x: hidden;
+        overflow-y: auto;
+        min-height: var(--tab-min-height);
+        max-height: calc(var(--tab-min-height) * var(--max-tab-rows));
+    }
+
+    /* Firefox 131+ fix */
+    scrollbox > slot {
+        flex-wrap: wrap;
+    }
+
+    .arrowscrollbox-overflow-start-indicator,
+    .arrowscrollbox-overflow-end-indicator {position: fixed !important}
+
+    .scrollbutton-up, .scrollbutton-down, spacer,
+    #scrollbutton-up, #scrollbutton-down {display: none !important}
+    `;
+
+    // This is a fix for FF89+ (Proton)
+    if (tabsHavePadding) {
+        style.innerHTML += `
         scrollbox {
-            display: flex;
-            flex-wrap: wrap; 
-            overflow-x: hidden;
-            overflow-y: auto;
-            min-height: var(--tab-min-height);
-            max-height: calc(var(--tab-min-height) * var(--max-tab-rows));
+            max-height: calc((var(--tab-min-height) + 8px) * var(--max-tab-rows));
         }
+        `;
+    }
 
-        /* Firefox 131+ fix */
-        scrollbox > slot {
-            flex-wrap: wrap;
+    // Possible sizes of the scrollbar
+    if (scrollbarSize == "thin") {
+        style.innerHTML += `
+        scrollbox {
+            scrollbar-color: var(--tabs-scrollbar-color);
+            scrollbar-width: thin;
         }
+        `
+    } else if (scrollbarSize == "none") {
+        style.innerHTML += `
+        scrollbox {
+            scrollbar-width: none;
+        }
+        `
+    } else {
+        style.innerHTML += `
+        scrollbox {
+            scrollbar-color: var(--tabs-scrollbar-color);
+            scrollbar-width: auto;
+        }
+        `
+    }
 
-        .arrowscrollbox-overflow-start-indicator,
-        .arrowscrollbox-overflow-end-indicator {position: fixed !important}
-
-        .scrollbutton-up, .scrollbutton-down, spacer,
-        #scrollbutton-up, #scrollbutton-down {display: none !important}
+    if (australisElement) {
+        css += `
+        .tabbrowser-tab[first-visible-tab="true"] {
+            padding-left: 0 !important;
+        }
         `;
 
-        // This is a fix for FF89+ (Proton)
-        if (tabsHavePadding) {
-            style.innerHTML += `
-            scrollbox {
-                max-height: calc((var(--tab-min-height) + 8px) * var(--max-tab-rows));
-            }
-            `;
+        style.innerHTML += `
+        scrollbox {
+            padding: 0 30px;
         }
-
-        // Possible sizes of the scrollbar
-        if (scrollbarSize == "thin") {
-            style.innerHTML += `
-            scrollbox {
-                scrollbar-color: var(--tabs-scrollbar-color);
-                scrollbar-width: thin;
-            }
-            `
-        } else if (scrollbarSize == "none") {
-            style.innerHTML += `
-            scrollbox {
-                scrollbar-width: none;
-            }
-            `
-        } else {
-            style.innerHTML += `
-            scrollbox {
-                scrollbar-color: var(--tabs-scrollbar-color);
-                scrollbar-width: auto;
-            }
-            `
-        }
-
-        if (australisElement) {
-            css += `
-            .tabbrowser-tab[first-visible-tab="true"] {
-                padding-left: 0 !important;
-            }
-            `;
-
-            style.innerHTML += `
-            scrollbox {
-                padding: 0 30px;
-            }
-            `;
-        }
-        
-        arrowScrollbox.shadowRoot.appendChild(style);
-	} else {
-        // Here the FF69-FF70 changes
-		css +=`
-        #tabbrowser-tabs .scrollbutton-up, #tabbrowser-tabs .scrollbutton-down {
-            display: none !important}
-
-		#tabbrowser-tabs .arrowscrollbox-scrollbox {
-	        display: flex;
-	        flex-wrap: wrap; 
-	        overflow-x: hidden;
-	        overflow-y: auto;     
-	        min-height: var(--tab-min-height);
-	        max-height: calc(var(--tab-min-height)*var(--max-tab-rows))}
-
-        #tabbrowser-tabs .tabbrowser-arrowscrollbox {
-            overflow: visible;
-            display: block;
-        }
-
-	    .arrowscrollbox-overflow-start-indicator,
-    	.arrowscrollbox-overflow-end-indicator {position: fixed !important}
-
-	    #main-window[tabsintitlebar] #tabbrowser-tabs scrollbar, #tab-scrollbox-resizer {
-	        -moz-window-dragging: no-drag}
-	    `;
-
-        if (scrollbarSize == "thin") {
-            style.innerHTML += `
-            #tabbrowser-tabs .arrowscrollbox-scrollbox {
-                scrollbar-color: var(--tabs-scrollbar-color) transparent;
-                scrollbar-width: thin;
-            }
-            `
-        }
-
-        if (australisElement) {
-            css += `
-            .tabbrowser-tab[first-visible-tab="true"] {
-                padding-left: 0 !important;
-            }
-
-            #tabbrowser-tabs .arrowscrollbox-scrollbox {
-                padding: 0 30px;
-            }
-            `;
-        }
-	}
+        `;
+    }
+    
+    arrowScrollbox.shadowRoot.appendChild(style);
 
 	let sss = Cc['@mozilla.org/content/style-sheet-service;1'].getService(Ci.nsIStyleSheetService);
 	let uri = makeURI('data:text/css;charset=UTF=8,' + encodeURIComponent(css));
@@ -606,9 +504,6 @@ function performTabDragOver(event) {
     let tabs = gBrowser.tabContainer.querySelectorAll(TAB_SELECTOR);
     let draggedTab = getDraggedTab(event);
     let draggedGroup = findParentOfType(draggedTab, TAB_GROUP_SELECTOR, 3);
-
-    if (draggedTab.nodeName === "label" && draggedGroup)
-        draggedGroup.setAttribute("hideonmove", "");
     
     if (!tab)
         tab = getTabFromEventTarget(event, false);
@@ -735,7 +630,6 @@ function performTabDropEvent(event) {
     // Handle moving tab groups
     let tabGroup = findParentOfType(draggedTab, TAB_GROUP_SELECTOR, 3);
     if (draggedTab.nodeName === "label" && tabGroup) {
-        tabGroup.removeAttribute("hideonmove");
         let tabToMoveTo = allTabs[lastKnownIndex];
         let draggedIndex = Array.prototype.indexOf.call(allTabs, tabGroup.querySelector("tab:first-of-type"));
         if (draggedIndex === lastKnownIndex)
@@ -944,7 +838,7 @@ function moveTabsToGroup(selectedTabs) {
         if (t.hasAttribute("newPin")) {
             t.removeAttribute("newPin");
         }
-        gBrowser.moveTabToGroup(t, groupToInsertTo);
+        gBrowser.moveTabToExistingGroup(t, groupToInsertTo);
         
         if (tabInGroupToMoveTo)
             gBrowser.moveTabBefore(t, tabInGroupToMoveTo);
