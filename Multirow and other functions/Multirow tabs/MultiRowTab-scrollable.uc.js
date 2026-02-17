@@ -5,6 +5,7 @@
 // @include        main
 // @compatibility  Firefox 147 to Firefox 149.0a1 (2026-02-12)
 // @author         Alice0775, Endor8, TroudhuK, Izheil, Merci-chao
+// @version        17/02/2026 23:38 Fix issue with dragging tabs to the end
 // @version        12/02/2026 18:40 Fix dragging tabs from a tab group
 // @version        03/10/2025 02:59 Fix tab group label showing on move
 // @version        01/10/2025 06:15 Fix issues with tab group moving
@@ -521,7 +522,6 @@ function performTabDragOver(event) {
             dropIndex = groupEnd;
         }
     }
-
     // Update the last known group position
     else if (tab.parentNode.nodeName === TAB_GROUP_SELECTOR) {
         groupToInsertTo = tab.parentNode;
@@ -531,6 +531,10 @@ function performTabDragOver(event) {
         groupToInsertTo = null;
         positionInGroup = null;
     }
+
+    // Move the tab to the last position if it's moved to an empty area of the tab box
+    if (event.target === gBrowser.tabContainer.arrowScrollbox || event.target == gBrowser.tabContainer.newTabButton)
+        dropIndex = gBrowser.tabs.length;
 
     let ltr = (window.getComputedStyle(gBrowser.tabContainer).direction == "ltr");
     let rect = gBrowser.tabContainer.arrowScrollbox.getBoundingClientRect();
@@ -649,12 +653,12 @@ function performTabDropEvent(event) {
     }
     // Handle moving regular tabs
     else if (draggedTab && dropEffect != "copy" && draggedTab.container == gBrowser.tabContainer) {
-        if (lastKnownIndex >= allTabs.length) 
-            lastKnownIndex = allTabs.length - 1;
+        if (lastKnownIndex > allTabs.length) 
+            lastKnownIndex = allTabs.length;
         newIndex = lastKnownIndex;
 
         // Perform the actual moving of tabs
-        moveSelectedTabs(newIndex, tabsContainer);
+        moveSelectedTabs(newIndex, tabsContainer, event);
 
         // Scroll to view since the scroll goes up when moving a tab down
         scrollToView(false);
@@ -670,8 +674,9 @@ function performTabDropEvent(event) {
  * Moves the selected tabs to a new index.
  * @param {*} newIndex The new index to move tabs to.
  * @param {*} tabsContainer The tabs container where tabs are.
+ * @param {*} event The drop event.
  */
-function moveSelectedTabs(newIndex, tabsContainer) {
+function moveSelectedTabs(newIndex, tabsContainer, event) {
     /* fix for moving multiple selected tabs and tab groups */
     let selectedTabs = gBrowser.selectedTabs.filter(t => t != null);
     
@@ -701,17 +706,21 @@ function moveSelectedTabs(newIndex, tabsContainer) {
         });
     // Handle moving tabs to a group
     } else if (groupToInsertTo) {
-        moveTabsToGroup(selectedTabs);
+        moveTabsToGroup(selectedTabs, event);
 
     // Handle regular tab moving
     } else {
         let allTabs = tabsContainer.querySelectorAll(TAB_SELECTOR);
         let tabToMoveTo = allTabs[newIndex];
-        let shouldMoveAfter = tabToMoveTo.parentNode.nodeName === TAB_GROUP_SELECTOR;
+        let shouldMoveAfter = tabToMoveTo?.parentNode.nodeName === TAB_GROUP_SELECTOR;
+        let shouldUngroup = false;
+        if (!tabToMoveTo && allTabs[newIndex - 1]) {
+            tabToMoveTo = allTabs[newIndex - 1];
+            shouldMoveAfter = true;
+            shouldUngroup = true;
+        }
         if (shouldMoveAfter)
             tabToMoveTo = allTabs[newIndex - 1];
-        else if (newIndex === allTabs.length - 1)
-            shouldMoveAfter = true;
         
         selectedTabs.forEach(t => {
             if (t.hasAttribute("newPin")) {
@@ -722,6 +731,9 @@ function moveSelectedTabs(newIndex, tabsContainer) {
                 gBrowser.moveTabBefore(t, tabToMoveTo);
             else
                 gBrowser.moveTabAfter(t, tabToMoveTo);
+
+            if (shouldUngroup)
+                gBrowser.ungroupTab(t);
         });
     }
 }
@@ -831,21 +843,25 @@ function resolveTabsContainer() {
 /**
  * Moves a set of tabs to a group.
  * @param {*} selectedTabs The tabs to move to the group.
+ * @param {*} event The drop event.
  */
-function moveTabsToGroup(selectedTabs) {
+function moveTabsToGroup(selectedTabs, event) {
     let tabInGroupToMoveTo = groupToInsertTo.querySelector(`tab:nth-of-type(${positionInGroup + 1})`);
+    
     selectedTabs.forEach(t => {
         if (t.hasAttribute("newPin")) {
             t.removeAttribute("newPin");
         }
         gBrowser.moveTabToExistingGroup(t, groupToInsertTo);
         
-        if (tabInGroupToMoveTo)
-            gBrowser.moveTabBefore(t, tabInGroupToMoveTo);
-        else if (positionInGroup == -1)
-            gBrowser.moveTabAfter(t, groupToInsertTo.querySelector("tab:last-of-type"));
-        else
+        if (event.target === gBrowser.tabContainer.arrowScrollbox || event.target == gBrowser.tabContainer.newTabButton) {
             gBrowser.moveTabAfter(t, groupToInsertTo);
+            gBrowser.ungroupTab(t);
+        } else if (tabInGroupToMoveTo)
+            gBrowser.moveTabBefore(t, tabInGroupToMoveTo);
+        else
+            gBrowser.moveTabAfter(t, groupToInsertTo.querySelector("tab:last-of-type"));
+        
     });
 }
 
