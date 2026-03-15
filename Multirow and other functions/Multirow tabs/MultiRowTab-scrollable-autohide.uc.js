@@ -5,6 +5,7 @@
 // @include        main
 // @compatibility  Firefox 147 to Firefox 149.0a1 (2026-02-12)
 // @author         Alice0775, Endor8, TroudhuK, Izheil, Merci-chao
+// @version        15/03/2026 22:05 Add toggle for resizing or not tabs when they have icons
 // @version        17/02/2026 23:38 Fix issue with dragging tabs to the end
 // @version        12/02/2026 18:40 Fix dragging tabs from a tab group
 // @version        30/11/2025 05:24 Fix the all tabs button displacing the new tab button on new row
@@ -22,6 +23,10 @@ function zzzz_MultiRowTabLite() {
     // Size of the scrollbar
     // auto = default OS size (will show arrow handlers even when it's not needed) | thin = half the width | none = always hidden scrollbar
     const scrollbarSize = "thin";
+
+    // Allow tabs resizing when there is an icon (like the sound icon)
+    // Only change this if you don't want the tabs to resize when having an icon.
+    const allowResizeWithIcon = true;
 
     // CSS section
 	let css =`
@@ -298,6 +303,14 @@ function zzzz_MultiRowTabLite() {
     .scrollbutton-up, .scrollbutton-down, spacer,
     #scrollbutton-up, #scrollbutton-down {display: none !important}
     `;
+
+    if (!allowResizeWithIcon) {
+        css += `
+        .tabbrowser-tab:not([pinned]) {
+            --tab-min-width-extra-icons: 0px !important;
+        }
+        `
+    }
 
     // This is a fix for FF89+ (Proton)
     if (document.documentElement.hasAttribute("proton") || tabsHavePadding) {

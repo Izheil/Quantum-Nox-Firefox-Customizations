@@ -5,6 +5,7 @@
 // @include        main
 // @compatibility  Firefox 147 to Firefox 149.0a1 (2026-02-12)
 // @author         Alice0775, Endor8, TroudhuK, Izheil, Merci-chao
+// @version        15/03/2026 22:05 Add toggle for resizing or not tabs when they have icons
 // @version        17/02/2026 23:38 Fix issue with dragging tabs to the end
 // @version        12/02/2026 18:40 Fix dragging tabs from a tab group
 // @version        03/10/2025 02:59 Fix tab group label showing on move
@@ -22,6 +23,10 @@ function zzzz_MultiRowTabLite() {
     // auto = default OS size | thin = half the width | none = always hidden scrollbar
     const scrollbarSize = "auto";
 
+    // Allow tabs resizing when there is an icon (like the sound icon)
+    // Only change this if you don't want the tabs to resize when having an icon.
+    const allowResizeWithIcon = true;
+
     // CSS section
 	let css =`
     /* MULTIROW TABS CSS */
@@ -36,7 +41,9 @@ function zzzz_MultiRowTabLite() {
 
      - For tab width growth v 
         Value of 1 -> Tab grows. Fixed max width of 226px.
-        Value of 0 -> Tab doesn't grow. Uses tab min width as fixed width.
+        Value of 0 -> Tab doesn't grow. Uses tab min width as fixed width. 
+        (Set the JS variable allowResizeWithIcon to false if you don't want tabs to resize when 
+        having icons as well).
         
      - To change the color or width of the resizer, change the --resizer-* variables to any other 
        value you want. (like #666 for color or 5px for width)
@@ -242,7 +249,6 @@ function zzzz_MultiRowTabLite() {
         gBrowser.tabContainer.addEventListener("TabUnpinned", fixUnpinnedTabsPosition, false);
     }
     
-    
     css +=
     `scrollbar, #tab-scrollbox-resizer {-moz-window-dragging: no-drag !important}
 
@@ -278,6 +284,14 @@ function zzzz_MultiRowTabLite() {
     .scrollbutton-up, .scrollbutton-down, spacer,
     #scrollbutton-up, #scrollbutton-down {display: none !important}
     `;
+
+    if (!allowResizeWithIcon) {
+        css += `
+        .tabbrowser-tab:not([pinned]) {
+            --tab-min-width-extra-icons: 0px !important;
+        }
+        `
+    }
 
     // This is a fix for FF89+ (Proton)
     if (tabsHavePadding) {
