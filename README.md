@@ -12,14 +12,14 @@ For anyone looking for the old code like the dark theme or the attempt of a mod 
 
 Files updated:
 
-- __Multirows*.uc.js__: Add option to not have tabs resize when they have an icon.
+- __Multirows*.uc.js__: Add option to hide new tab button.
 
 
-### Pre-Last update: 17/02/2026
+### Pre-Last update: 15/03/2026
 
 Files updated:
 
-- __Multirows*.uc.js__: Fix issues while moving tabs to the end.
+- __Multirows*.uc.js__: Add option to not have tabs resize when they have an icon.
 
 ### A note on people looking to replace some Tab Mix Plus features:
 You can find some of the basic settings that can be simulated through `about:config`, some userscripts, and some addons [here](https://github.com/Izheil/Quantum-Nox-Firefox-Customizations/wiki/Useful-about:config-settings#some-tab-mix-plus-features).

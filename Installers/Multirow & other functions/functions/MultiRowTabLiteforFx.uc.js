@@ -19,6 +19,9 @@ function zzzz_MultiRowTabLite() {
     // Only change this if you don't want the tabs to resize when having an icon.
     const allowResizeWithIcon = true;
 
+    // If the new tab button should be hidden
+    const hideNewTabBtn = false;
+
 	let css =`
     /* MULTIROW TABS CSS */
 
@@ -141,14 +144,6 @@ function zzzz_MultiRowTabLite() {
         width: 0 !important;
     }
 
-    /* This fixes the new tab button overflowing to the new row alone */
-    #tabbrowser-arrowscrollbox-periphery {
-        margin-left: -36px !important} 
-        
-    .tabbrowser-tab:has(+#tabbrowser-arrowscrollbox-periphery), tab-group:has(+#tabbrowser-arrowscrollbox-periphery),
-    tab-group:has(+#tabbrowser-arrowscrollbox-periphery) > tab:last-of-type {
-        margin-right: 36px !important}
-
     /* This fixes issues with tab dragging */
     .tabbrowser-tab[dragtarget] {
         z-index: 1 !important;
@@ -259,11 +254,30 @@ function zzzz_MultiRowTabLite() {
     #scrollbutton-up, #scrollbutton-down {display: none !important}
     `
 
+    // This is a fix for the tabs with icons
     if (!allowResizeWithIcon) {
         css += `
         .tabbrowser-tab:not([pinned]) {
             --tab-min-width-extra-icons: 0px !important;
         }
+        `
+    }
+
+    // If the new tab button is hidden we don't apply the overflowing fix
+    if (hideNewTabBtn) {
+        css += `
+        #tabbrowser-arrowscrollbox-periphery {
+            display: none !important}
+        `
+    } else {
+        css += `
+        /* This fixes the new tab button overflowing to the new row alone */
+        #tabbrowser-arrowscrollbox-periphery {
+            margin-left: -36px !important} 
+        
+        .tabbrowser-tab:has(+#tabbrowser-arrowscrollbox-periphery), tab-group:has(+#tabbrowser-arrowscrollbox-periphery),
+        .tab-group:has(+#tabbrowser-arrowscrollbox-periphery) > tab:last-of-type {
+            margin-right: 36px !important}
         `
     }
 
