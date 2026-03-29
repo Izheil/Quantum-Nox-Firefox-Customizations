@@ -5,6 +5,7 @@
 // @include        main
 // @compatibility  Firefox 147 to Firefox 149.0a1 (2026-02-12)
 // @author         Alice0775, Endor8, TroudhuK, Izheil, Merci-chao
+// @version        29/03/2026 03:58 Fix issue with new button and split view
 // @version        15/03/2026 22:05 Add toggle for resizing or not tabs when they have icons
 // @version        17/02/2026 23:38 Fix issue with dragging tabs to the end
 // @version        12/02/2026 18:40 Fix dragging tabs from a tab group
@@ -166,6 +167,12 @@ function zzzz_MultiRowTabLite() {
         max-height: calc(var(--tab-min-height) + 8px);
     }
 
+    /* Make tab split view container not be bigger in height than the size of a tab */
+    tab-split-view-wrapper {
+        max-height: var(--tab-min-height) !important;
+        padding: 0px !important;
+    }
+
     /* Disable duplicated min/max/close buttons */
     #toolbar-menubar:not([inactive])~#TabsToolbar .titlebar-buttonbox-container {
         width: 0 !important;
@@ -321,7 +328,8 @@ function zzzz_MultiRowTabLite() {
             margin-left: -36px !important} 
         
         .tabbrowser-tab:has(+#tabbrowser-arrowscrollbox-periphery), tab-group:has(+#tabbrowser-arrowscrollbox-periphery),
-        .tab-group:has(+#tabbrowser-arrowscrollbox-periphery) > tab:last-of-type {
+        .tab-group:has(+#tabbrowser-arrowscrollbox-periphery) > tab:last-of-type,
+        tab-split-view-wrapper:has(+#tabbrowser-arrowscrollbox-periphery) {
             margin-right: 36px !important}
         `
     }
