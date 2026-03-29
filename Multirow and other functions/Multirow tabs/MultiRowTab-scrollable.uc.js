@@ -3,7 +3,7 @@
 // @namespace      https://github.com/Izheil/Quantum-Nox-Firefox-Customizations
 // @description    Multi-row tabs draggability fix with scrollable rows
 // @include        main
-// @compatibility  Firefox 147 to Firefox 149.0a1 (2026-02-12)
+// @compatibility  Firefox 147 to Firefox 151.0a1 (2026-03-28)
 // @author         Alice0775, Endor8, TroudhuK, Izheil, Merci-chao
 // @version        29/03/2026 03:58 Fix issue with new button and split view
 // @version        15/03/2026 22:05 Add toggle for resizing or not tabs when they have icons

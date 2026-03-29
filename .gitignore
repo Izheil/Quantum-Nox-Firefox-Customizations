@@ -45,3 +45,5 @@ $RECYCLE.BIN/
 
 # NFS temporary files
 .nfs*
+Installers/Multirow & other functions/build/*
+Installers/Multirow & other functions/dist/*
