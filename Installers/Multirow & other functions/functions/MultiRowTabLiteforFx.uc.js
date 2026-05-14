@@ -3,8 +3,9 @@
 // @namespace      https://github.com/Izheil/Quantum-Nox-Firefox-Customizations
 // @description    Multi-row tabs draggability fix with unlimited rows
 // @include        main
-// @compatibility  Firefox 147 to Firefox 151.0a1 (2026-03-28)
+// @compatibility  Firefox 150 to Firefox 152.0a1 (2026-05-14)
 // @author         Alice0775, Endor8, TroudhuK, Izheil, Merci-chao
+// @version        14/05/2026 18:13 Fix ownerGlobal property being deprecated in FF152+
 // @version        29/03/2026 03:58 Fix issue with new button and split view
 // @version        15/03/2026 22:05 Add toggle for resizing or not tabs when they have icons
 // @version        17/02/2026 23:38 Fix issue with dragging tabs to the end
@@ -343,8 +344,6 @@ function zzzz_MultiRowTabLite() {
             
             // Event handling
             if (!listenersActive) {
-                gBrowser.tabContainer.getDropEffectForTabDrag = (event) => orig_getDropEffectForTabDrag(event);
-                gBrowser.tabContainer._getDropEffectForTabDrag = (event) => orig_getDropEffectForTabDrag(event);
                 gBrowser.tabContainer.on_dragover = (dragoverEvent) => performTabDragOver(dragoverEvent);
                 gBrowser.tabContainer._onDragOver = (dragoverEvent) => performTabDragOver(dragoverEvent);
                 gBrowser.tabContainer.ondrop = (dropEvent) => performTabDropEvent(dropEvent);
@@ -680,23 +679,26 @@ function orig_getDropEffectForTabDrag(event) {
 
     if (isMovingTabs) {
         let sourceNode = dt.mozGetDataAt(TAB_DROP_TYPE, 0);
+        let nodeOwnerGlobal = sourceNode.ownerGlobal;
+        if (!nodeOwnerGlobal)
+            nodeOwnerGlobal = sourceNode.documentGlobal;
         if ((gBrowser.isTab(sourceNode) || gBrowser.isTabGroupLabel(sourceNode)) &&
-            sourceNode.ownerGlobal.isChromeWindow &&
+            nodeOwnerGlobal.isChromeWindow &&
             sourceNode.ownerDocument.documentElement.getAttribute("windowtype") ==
             "navigator:browser") {
             // Do not allow transfering a private tab to a non-private window
             // and vice versa.
             if (PrivateBrowsingUtils.isWindowPrivate(window) !=
-                PrivateBrowsingUtils.isWindowPrivate(sourceNode.ownerGlobal))
+                PrivateBrowsingUtils.isWindowPrivate(nodeOwnerGlobal))
                 return "none";
         
 
             if (window.gMultiProcessBrowser !=
-                sourceNode.ownerGlobal.gMultiProcessBrowser)
+                nodeOwnerGlobal.gMultiProcessBrowser)
                 return "none";
         
 
-            if (window.gFissionBrowser != sourceNode.ownerGlobal.gFissionBrowser)
+            if (window.gFissionBrowser != nodeOwnerGlobal.gFissionBrowser)
                 return "none";
         
 
