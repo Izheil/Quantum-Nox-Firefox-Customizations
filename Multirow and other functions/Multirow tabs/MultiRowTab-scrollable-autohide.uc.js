@@ -5,6 +5,7 @@
 // @include        main
 // @compatibility  Firefox 150 to Firefox 152.0a1 (2026-05-14)
 // @author         Alice0775, Endor8, TroudhuK, Izheil, Merci-chao
+// @version        27/07/2026 15:51 Fix usse with selected tab not scrolling to view and the tabs row resizer not working.
 // @version        14/05/2026 18:13 Fix ownerGlobal property being deprecated in FF152+
 // @version        29/03/2026 03:58 Fix issue with new button and split view
 // @version        15/03/2026 22:05 Add toggle for resizing or not tabs when they have icons
@@ -115,10 +116,12 @@ function zzzz_MultiRowTabLite() {
 
     /*-------- Don't edit past here unless you know what you are doing --------*/
     
-    #tab-scrollbox-resizer {
-        width: var(--resizer-width);
+    #tab-rows-resizer {
+        -moz-window-dragging: no-drag !important;
+        height: unset !important;
+        cursor: n-resize !important;
         border-bottom: 5px double var(--resizer-color);
-        cursor: n-resize;
+        min-width: var(--resizer-width);
     }
 
     /* These 2 rules are a fix to make sure that tabs become smaller on smaller --tab-min-height values */
@@ -268,7 +271,7 @@ function zzzz_MultiRowTabLite() {
     }
 
     css +=
-    `scrollbar, #tab-scrollbox-resizer {-moz-window-dragging: no-drag !important}
+    `scrollbar {-moz-window-dragging: no-drag !important}
 
     #tabbrowser-tabs > arrowscrollbox {
         overflow: visible;
@@ -412,7 +415,7 @@ function zzzz_MultiRowTabLite() {
     // Detects if exiting fullscreen for fullscreenchange event
     function checkFullScreenScrolling() {
         if (!document.fullscreenElement) {
-            let selTab = document.querySelector(".tabbrowser-tab[selected='true']");
+            let selTab = document.querySelector(".tabbrowser-tab[selected]");
             selTab.scrollIntoView();
         }
     }
@@ -426,20 +429,20 @@ function zzzz_MultiRowTabLite() {
     // Handles resizing of rows when enabled
     if (useResizer) {
         let tabsScrollbox;
+        // FF153+
+        if (document.getElementById("tabbrowser-arrowscrollbox").shadowRoot) {
+            tabsScrollbox = document.getElementById("tabbrowser-arrowscrollbox").shadowRoot.querySelector("scrollbox");
         // FF71+
-        if (document.querySelector("#tabbrowser-tabs > arrowscrollbox").shadowRoot) {
+        } else if (document.querySelector("#tabbrowser-tabs > arrowscrollbox").shadowRoot) {
             tabsScrollbox = document.querySelector("#tabbrowser-tabs > arrowscrollbox").shadowRoot.querySelector(".scrollbox-clip > scrollbox");
-        // FF70-
-        } else {
-            tabsScrollbox = document.querySelector("#tabbrowser-tabs .arrowscrollbox-scrollbox");
         }
         
         const tabsContainer = document.getElementById("TabsToolbar-customization-target");
         const mainWindow = document.getElementById("main-window");
 
         // Adds the resizer element to tabsContainer
-        let tabsResizer = document.createElement("div");
-        tabsResizer.setAttribute('id', "tab-scrollbox-resizer");
+        let tabsResizer = document.createElement("resizer");
+        tabsResizer.setAttribute('id', "tab-rows-resizer");
         tabsContainer.appendChild(tabsResizer);
 
         // Removes the listeners for tab rows resizing
@@ -801,7 +804,7 @@ function moveSelectedTabs(newIndex, tabsContainer, event) {
 
 // This scrolls down to the current tab when you open a new one, or restore a session.
 function scrollToView(smooth = true) {
-    let selTab = document.querySelector(".tabbrowser-tab[selected='true']");
+    let selTab = document.querySelector(".tabbrowser-tab[selected]");
     let wrongTab = document.querySelectorAll('.tabbrowser-tab[style^="margin-inline-start"]');
     let hiddenToolbox = document.querySelector('#navigator-toolbox[style^="margin-top"]');
     let fullScreen = document.querySelector('#main-window[sizemode="fullscreen"]');
