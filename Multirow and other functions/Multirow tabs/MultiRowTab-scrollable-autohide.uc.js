@@ -5,6 +5,7 @@
 // @include        main
 // @compatibility  Firefox 150 to Firefox 152.0a1 (2026-05-14)
 // @author         Alice0775, Endor8, TroudhuK, Izheil, Merci-chao
+// @version        28/07/2026 16:43 Make sure that all pinned tabs are migrated from startup.
 // @version        27/07/2026 15:51 Fix usse with selected tab not scrolling to view and the tabs row resizer not working.
 // @version        14/05/2026 18:13 Fix ownerGlobal property being deprecated in FF152+
 // @version        29/03/2026 03:58 Fix issue with new button and split view
@@ -260,10 +261,17 @@ function zzzz_MultiRowTabLite() {
     // Fix pinned tabs past FF141+
     const pinnedTabsContainer = document.getElementById("pinned-tabs-container");
     if (pinnedTabsContainer) {
+        // Make sure to migrate all pinned tabs right from the start
+        migratePinnedTabs(arrowScrollbox, pinnedTabsContainer.querySelectorAll(".tabbrowser-tab"));
+        
+        // Then add a mutation observer so that any new pinned tab gets migrated
         const pinnedObserver = new MutationObserver((mutationList) => {
+            // Migrate entries respecting the order they were added in
             for (const mutation of mutationList) {
                 migratePinnedTabs(arrowScrollbox, mutation.addedNodes);
             }
+            // Migrate any remaining pinned tabs if there was any
+            migratePinnedTabs(arrowScrollbox, pinnedTabsContainer.querySelectorAll(".tabbrowser-tab"));
         });
         pinnedObserver.observe(pinnedTabsContainer, { childList: true });
 
@@ -883,14 +891,16 @@ function orig_getDropEffectForTabDrag(event) {
 function migratePinnedTabs(newContainer, pinnedTabs) {
     if (!pinnedTabs || pinnedTabs.length == 0)
         return;
-    pinnedTabs.forEach((tab) => {
+    
+    for (let i = 0; i < pinnedTabs.length; i++) {
+        let tab = pinnedTabs[i]
         tab.setAttribute("newPin", "true");
         let firstUnpinnedTab = newContainer.querySelector(".tabbrowser-tab:not([pinned])");
         if (firstUnpinnedTab)
             newContainer.insertBefore(tab, firstUnpinnedTab);
         else
             newContainer.insertBefore(tab, document.getElementById("tabbrowser-arrowscrollbox-periphery"));
-    });
+    }
 }
 
 /**

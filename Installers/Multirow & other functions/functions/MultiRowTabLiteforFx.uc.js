@@ -220,10 +220,17 @@ function zzzz_MultiRowTabLite() {
     // Fix pinned tabs past FF141+
     const pinnedTabsContainer = document.getElementById("pinned-tabs-container");
     if (pinnedTabsContainer) {
+        // Make sure to migrate all pinned tabs right from the start
+        migratePinnedTabs(arrowScrollbox, pinnedTabsContainer.querySelectorAll(".tabbrowser-tab"));
+        
+        // Then add a mutation observer so that any new pinned tab gets migrated
         const pinnedObserver = new MutationObserver((mutationList) => {
+            // Migrate entries respecting the order they were added in
             for (const mutation of mutationList) {
                 migratePinnedTabs(arrowScrollbox, mutation.addedNodes);
             }
+            // Migrate any remaining pinned tabs if there was any
+            migratePinnedTabs(arrowScrollbox, pinnedTabsContainer.querySelectorAll(".tabbrowser-tab"));
         });
         pinnedObserver.observe(pinnedTabsContainer, { childList: true });
 
@@ -714,19 +721,21 @@ function orig_getDropEffectForTabDrag(event) {
 
 /**
  * The pinned tabs to migrate to the main container.
- * @param {Tab} pinnedTabs 
+ * @param {Array<Tab>} pinnedTabs The pinned tabs.
  */
 function migratePinnedTabs(newContainer, pinnedTabs) {
     if (!pinnedTabs || pinnedTabs.length == 0)
         return;
-    pinnedTabs.forEach((tab) => {
+
+    for (let i = 0; i < pinnedTabs.length; i++) {
+        let tab = pinnedTabs[i]
         tab.setAttribute("newPin", "true");
         let firstUnpinnedTab = newContainer.querySelector(".tabbrowser-tab:not([pinned])");
         if (firstUnpinnedTab)
             newContainer.insertBefore(tab, firstUnpinnedTab);
         else
             newContainer.insertBefore(tab, document.getElementById("tabbrowser-arrowscrollbox-periphery"));
-    });
+    }
 }
 
 /**
