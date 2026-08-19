@@ -8,11 +8,11 @@ If you only want multirow or any other function that isn't related to the theme 
 
 For anyone looking for the old code like the dark theme or the attempt of a mod loader, you can find it in the **backup/2025-09-12** branch.
 
-### Last update: 28/07/2026
+### Last update: 19/08/2026
 
 Files updated:
 
-- __Multirows*.uc.js__: Fix issues with pinned tabs not being correctly pinned on new firefox windows+.
+- __userChrome.js__: Fixed issue with Firefox not loading scripts on FF155+.
 
 ### Pre-last update: 28/07/2026
 

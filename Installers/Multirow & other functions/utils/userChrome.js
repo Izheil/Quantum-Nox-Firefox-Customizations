@@ -8,7 +8,8 @@ ChromeUtils.defineESModuleGetters(this, {
 
 let UC = {
   webExts: new Map(),
-  sidebar: new Map()
+  sidebar: new Map(),
+  sandboxes: new WeakMap()
 };
 
 let _uc = {
@@ -103,22 +104,36 @@ let _uc = {
   everLoaded: [],
   
   loadScript: function (script, win) {
-    if (!script.regex.test(win.location.href) || (script.filename != this.ALWAYSEXECUTE && !script.isEnabled)) {
+    if (
+      !script.regex.test(win.location.href) ||
+      (script.filename != this.ALWAYSEXECUTE && !script.isEnabled)
+    ) {
       return;
     }
+
     if (script.onlyonce && script.isRunning) {
       if (script.startup) {
-        eval(script.startup);
+        Cu.evalInSandbox(`(function(script, win){${script.startup}})`, this.getSandbox(win))(
+          script,
+          win
+        );
       }
       return;
     }
 
     try {
-      Services.scriptloader.loadSubScript(script.url + '?' + script.file.lastModifiedTime,
-                                          script.onlyonce ? { window: win } : win);
+      let options = win
+      if (script.onlyonce)
+        options = { window: win }
+      options.allowUnsafeURL = true
+      options.target = win
+      Services.scriptloader.loadSubScriptWithOptions(script.url + '?' + script.file.lastModifiedTime, options);
       script.isRunning = true;
       if (script.startup) {
-        eval(script.startup);
+        Cu.evalInSandbox(`(function(script, win){${script.startup}})`, this.getSandbox(win))(
+          script,
+          win
+        );
       }
       if (!script.shutdown) {
         this.everLoaded.push(script.id);
@@ -126,6 +141,24 @@ let _uc = {
     } catch (ex) {
       Cu.reportError(ex);
     }
+  },
+
+  getSandbox: function (doc) {
+    if (!UC.sandboxes) UC.sandboxes = new WeakMap();
+    const global = Cu.getGlobalForObject(doc);
+    if (UC.sandboxes.has(global)) return UC.sandboxes.get(global);
+    const sb = Cu.Sandbox(Services.scriptSecurityManager.getSystemPrincipal(), {
+      sandboxPrototype: global,
+      sameZoneAs: global,
+      wantXrays: false,
+      sandboxName: 'UCJS:Sandbox',
+    });
+    UC.sandboxes.set(global, sb);
+    global.addEventListener('unload', () => {
+      UC.sandboxes.delete(global);
+      Cu.nukeSandbox(sb);
+    });
+    return sb;
   },
 
   windows: function (fun, onlyBrowsers = true) {
@@ -188,7 +221,7 @@ let UserChrome_js = {
 
   load: function (window) {
     let location = window.location;
-    Components.utils.reportError(window.location.href);
+    //Components.utils.reportError(window.location.href);
     if (!this.sharedWindowOpened && location.href == 'chrome://extensions/content/dummy.xhtml') {
       this.sharedWindowOpened = true;
 
@@ -218,11 +251,15 @@ let UserChrome_js = {
 
     browser.messageManager.removeMessageListener('Extension:BackgroundViewLoaded', this.messageListener);
 
-    if (browser.ownerGlobal.location.href == 'chrome://extensions/content/dummy.xhtml') {
+    let ownerGlobal = browser.ownerGlobal
+    if (!ownerGlobal)
+      ownerGlobal = browser.ownerDocument
+
+    if (ownerGlobal.location.href == 'chrome://extensions/content/dummy.xhtml') {
       UC.webExts.set(addonId, browser);
       Services.obs.notifyObservers(null, 'UCJS:WebExtLoaded', addonId);
     } else {
-      let win = browser.ownerGlobal.windowRoot.ownerGlobal;
+      let win = ownerGlobal.documentGlobal;
       UC.sidebar.get(addonId)?.set(win, browser) || UC.sidebar.set(addonId, new Map([[win, browser]]));
       Services.obs.notifyObservers(win, 'UCJS:SidebarLoaded', addonId);
     }
