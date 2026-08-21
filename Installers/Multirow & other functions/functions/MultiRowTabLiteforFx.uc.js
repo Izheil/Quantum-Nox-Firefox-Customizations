@@ -3,8 +3,9 @@
 // @namespace      https://github.com/Izheil/Quantum-Nox-Firefox-Customizations
 // @description    Multi-row tabs draggability fix with unlimited rows
 // @include        main
-// @compatibility  Firefox 150 to Firefox 152.0a1 (2026-05-14)
+// @compatibility  Firefox 150 to Firefox 156.0a1 (2026-08-21)
 // @author         Alice0775, Endor8, TroudhuK, Izheil, Merci-chao
+// @version        21/08/2026 16:15 Fix issue with group before pinned tabs on session restore.
 // @version        14/05/2026 18:13 Fix ownerGlobal property being deprecated in FF152+
 // @version        29/03/2026 03:58 Fix issue with new button and split view
 // @version        15/03/2026 22:05 Add toggle for resizing or not tabs when they have icons
@@ -731,9 +732,12 @@ function migratePinnedTabs(newContainer, pinnedTabs) {
         let tab = pinnedTabs[i]
         tab.setAttribute("newPin", "true");
         let firstUnpinnedTab = newContainer.querySelector(".tabbrowser-tab:not([pinned])");
-        if (firstUnpinnedTab)
+        if (firstUnpinnedTab) {
+            let tabGroup = findParentOfType(firstUnpinnedTab, TAB_GROUP_SELECTOR);
+            if (tabGroup)
+                firstUnpinnedTab = tabGroup
             newContainer.insertBefore(tab, firstUnpinnedTab);
-        else
+        } else
             newContainer.insertBefore(tab, document.getElementById("tabbrowser-arrowscrollbox-periphery"));
     }
 }

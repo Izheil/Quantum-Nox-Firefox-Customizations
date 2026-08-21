@@ -3,8 +3,9 @@
 // @namespace      https://github.com/Izheil/Quantum-Nox-Firefox-Customizations
 // @description    Multi-row tabs draggability fix with autohiding scrollbar
 // @include        main
-// @compatibility  Firefox 150 to Firefox 152.0a1 (2026-05-14)
+// @compatibility  Firefox 150 to Firefox 156.0a1 (2026-08-21)
 // @author         Alice0775, Endor8, TroudhuK, Izheil, Merci-chao
+// @version        21/08/2026 16:15 Fix issue with group before pinned tabs on session restore.
 // @version        28/07/2026 16:43 Make sure that all pinned tabs are migrated from startup.
 // @version        27/07/2026 15:51 Fix usse with selected tab not scrolling to view and the tabs row resizer not working.
 // @version        14/05/2026 18:13 Fix ownerGlobal property being deprecated in FF152+
@@ -896,9 +897,12 @@ function migratePinnedTabs(newContainer, pinnedTabs) {
         let tab = pinnedTabs[i]
         tab.setAttribute("newPin", "true");
         let firstUnpinnedTab = newContainer.querySelector(".tabbrowser-tab:not([pinned])");
-        if (firstUnpinnedTab)
+        if (firstUnpinnedTab) {
+            let tabGroup = findParentOfType(firstUnpinnedTab, TAB_GROUP_SELECTOR);
+            if (tabGroup)
+                firstUnpinnedTab = tabGroup
             newContainer.insertBefore(tab, firstUnpinnedTab);
-        else
+        } else
             newContainer.insertBefore(tab, document.getElementById("tabbrowser-arrowscrollbox-periphery"));
     }
 }
