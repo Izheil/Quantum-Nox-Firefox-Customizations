@@ -5,6 +5,7 @@
 // @include        main
 // @compatibility  Firefox 150 to Firefox 156.0a1 (2026-08-21)
 // @author         Alice0775, Endor8, TroudhuK, Izheil, Merci-chao
+// @version        22/08/2026 04:20 Fix tab sizing calculation.
 // @version        21/08/2026 16:15 Fix issue with group before pinned tabs on session restore.
 // @version        29/03/2026 03:58 Fix issue with new button and split view
 // @version        15/03/2026 22:05 Add toggle for resizing or not tabs when they have icons
@@ -233,7 +234,7 @@ function zzzz_MultiRowTabLite() {
     // Check if it's proton past FF91
     let tabsHavePadding = false;
     const tabBackground = document.getElementsByClassName("tab-background")[0];
-    if (parseInt(getComputedStyle(tabBackground).getPropertyValue('--tab-block-margin').substring(0,1)) > 0) {
+    if (parseInt(getComputedStyle(tabBackground).getPropertyValue('--tab-margin-block').substring(0,1)) > 0) {
         tabsHavePadding = true;
     }
 
