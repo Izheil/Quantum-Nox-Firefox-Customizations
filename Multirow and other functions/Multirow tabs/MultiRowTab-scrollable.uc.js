@@ -534,6 +534,9 @@ function performTabDragOver(event) {
         }
     }
 
+    if (!tab) {
+        tab = getTabFromEventTarget(event, false);
+    }
     
     let dropIndex = gBrowser.tabContainer._getDropIndex(event);
     if (dropIndex == null)
@@ -559,6 +562,7 @@ function performTabDragOver(event) {
             dropIndex = groupEnd;
         }
     }
+
     // Update the last known group position
     else if (tab.parentNode.nodeName === TAB_GROUP_SELECTOR) {
         groupToInsertTo = tab.parentNode;
@@ -590,6 +594,7 @@ function performTabDragOver(event) {
 
         if (CSS.supports("offset-anchor", "left bottom")) // Compatibility fix for FF72+
             newMarginY += rect.height / 2 - tabRect.height / 2;
+        
     } else if (dropIndex != null || dropIndex != 0) {
         let tabRect = tabs[dropIndex].getBoundingClientRect();
         let tabLeft = tabRect.left;

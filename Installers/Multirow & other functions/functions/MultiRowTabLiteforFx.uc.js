@@ -5,6 +5,7 @@
 // @include        main
 // @compatibility  Firefox 150 to Firefox 156.0a1 (2026-08-21)
 // @author         Alice0775, Endor8, TroudhuK, Izheil, Merci-chao
+// @version        01/09/2026 18:48 Fix issues with tab dragging.
 // @version        21/08/2026 16:15 Fix issue with group before pinned tabs on session restore.
 // @version        14/05/2026 18:13 Fix ownerGlobal property being deprecated in FF152+
 // @version        29/03/2026 03:58 Fix issue with new button and split view
@@ -788,7 +789,7 @@ function moveTabsToGroup(selectedTabs, event) {
  * @returns The index of the tab inside the parent container.
  */
 function findDropIndexOfTab(tabsContainer, tab) {
-    return Array.prototype.indexOf.call(tabsContainer.childNodes, tab)
+    return Array.prototype.indexOf.call(tabsContainer.querySelectorAll(TAB_SELECTOR), tab)
 }
 
 /**
