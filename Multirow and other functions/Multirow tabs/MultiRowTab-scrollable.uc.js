@@ -5,6 +5,7 @@
 // @include        main
 // @compatibility  Firefox 157 to Firefox 160.0a1 (2026-10-16)
 // @author         Alice0775, Endor8, TroudhuK, Izheil, Merci-chao
+// @version        13/11/2026 17:21 Ensure pinned tabs are migrated on startup restore.
 // @version        16/10/2026 22:20 Make the tab padding to adjust automatically.
 // @version        16/10/2026 17:40 Fix issue with tab pinning of the last pinned tab.
 // @version        30/09/2026 03:03 Fix tab sizing calculation for Nova design.
@@ -248,12 +249,14 @@ function zzzz_MultiRowTabLite() {
     // Fix pinned tabs past FF141+
     const pinnedTabsContainer = document.getElementById("pinned-tabs-container");
     if (pinnedTabsContainer) {
-        const pinnedObserver = new MutationObserver((mutationList) => {
-            for (const mutation of mutationList) {
-                migratePinnedTabs(arrowScrollbox, mutation.addedNodes);
-            }
+        // Add a mutation observer so that any new pinned tab gets migrated
+        const pinnedObserver = new MutationObserver(() => {
+            migratePinnedTabs(arrowScrollbox, pinnedTabsContainer);
         });
         pinnedObserver.observe(pinnedTabsContainer, { childList: true });
+
+        // Make sure to migrate all pinned tabs right from the start
+        migratePinnedTabs(arrowScrollbox, pinnedTabsContainer);
     }
     
     css +=
@@ -735,7 +738,7 @@ function moveSelectedTabs(newIndex, tabsContainer, event) {
             }
 
             gBrowser.pinTab(t);
-            migratePinnedTabs(tabsContainer, document.querySelectorAll("#pinned-tabs-container .tabbrowser-tab"));
+            migratePinnedTabs(tabsContainer, document.getElementById("pinned-tabs-container"));
             setTimeout(() => {
                 const tab = tabsContainer.querySelector(`.tabbrowser-tab[newPin]:nth-child(${tabsContainer.querySelectorAll("tab[newPin]").length})`);
                 const tabToMoveAt = tabsContainer.childNodes[newIndex];
@@ -775,7 +778,7 @@ function moveSelectedTabs(newIndex, tabsContainer, event) {
 
             if ((tabWasPinned && newIndex == pinnedTabsCount) || (!tabWasPinned && newIndex < pinnedTabsCount)) {
                 gBrowser.pinTab(t)
-                migratePinnedTabs(tabsContainer, document.querySelectorAll("#pinned-tabs-container .tabbrowser-tab"));
+                migratePinnedTabs(tabsContainer, document.getElementById("pinned-tabs-container"));
             }
             
             if (!shouldMoveAfter)
@@ -899,12 +902,24 @@ function orig_getDropEffectForTabDrag(event) {
 
 /**
  * The pinned tabs to migrate to the main container.
- * @param {Tab} pinnedTabs 
+ * @param {Arrowscrollbox} newContainer - The container to move the pinned tabs to.
+ * @param {Tab} pinnedTabsContainer - The container of the tabs. 
  */
-function migratePinnedTabs(newContainer, pinnedTabs) {
+function migratePinnedTabs(newContainer, pinnedTabsContainer) {
+    let pinnedTabs = pinnedTabsContainer.getElementsByClassName("tabbrowser-tab");
+
     if (!pinnedTabs || pinnedTabs.length == 0)
         return;
-    pinnedTabs.forEach((tab) => {
+
+    // Put the tabs in an intermediate list to keep the order of tab insertion
+    let pinnedTabsList = []
+    for (let i = 0; i < pinnedTabs.length; i++) {
+        let tab = pinnedTabs[i];
+        pinnedTabsList.push(tab);
+    }
+
+    // Insert the tabs in order
+    pinnedTabsList.forEach((tab) => {
         tab.setAttribute("newPin", "true");
         let firstUnpinnedTab = newContainer.querySelector(".tabbrowser-tab:not([pinned])");
         if (firstUnpinnedTab) {
@@ -914,7 +929,7 @@ function migratePinnedTabs(newContainer, pinnedTabs) {
             newContainer.insertBefore(tab, firstUnpinnedTab);
         } else
             newContainer.insertBefore(tab, document.getElementById("tabbrowser-arrowscrollbox-periphery"));
-    });
+    })
 }
 
 /**

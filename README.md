@@ -8,16 +8,16 @@ If you only want multirow or any other function that isn't related to the theme 
 
 For anyone looking for the old code like the dark theme or the attempt of a mod loader, you can find it in the **backup/2025-09-12** branch.
 
-### Last update: 16/10/2026
+### Last update: 13/11/2026
 
 Files updated:
 
+- __MultiRowTab*.uc.js__: Fixed issue with tab pinning on startup restore.
+
+### Pre-last update: 16/10/2026
+
+Files updated:
 - __MultiRowTab*.uc.js__: Fixed issue with tab pinning, and make tab padding adjust automatically.
-
-### Pre-last update: 30/09/2026
-
-Files updated:
-- __MultiRowTab*.uc.js__: Fixed sizing issue in Nova redesign.
 
 ### A note on people looking to replace some Tab Mix Plus features:
 You can find some of the basic settings that can be simulated through `about:config`, some userscripts, and some addons [here](https://github.com/Izheil/Quantum-Nox-Firefox-Customizations/wiki/Useful-about:config-settings#some-tab-mix-plus-features).
